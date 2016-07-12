@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bmc-daemon-lib (0.1.1)
+    bmc-daemon-lib (0.1.2)
       chamber (~> 2.9)
       newrelic_rpm
 
