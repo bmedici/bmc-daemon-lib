@@ -3,7 +3,7 @@ PATH
   specs:
     bmc-daemon-lib (0.1.0)
       chamber (~> 2.9)
-      daemons
+      newrelic_rpm
 
 GEM
   remote: https://rubygems.org/
@@ -12,9 +12,9 @@ GEM
     chamber (2.9.0)
       hashie (~> 3.3)
       thor (~> 0.19.1)
-    daemons (1.2.3)
     diff-lcs (1.2.5)
     hashie (3.4.4)
+    newrelic_rpm (3.16.0.318)
     parser (2.3.1.2)
       ast (~> 2.2)
     powerpack (0.1.1)
