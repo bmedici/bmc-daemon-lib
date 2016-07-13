@@ -108,7 +108,11 @@ module BmcDaemonLib
 
     def self.newrelic_enabled?
       ensure_init
-      self[:newrelic] && self[:newrelic][:licence]
+      if self[:newrelic] && self[:newrelic][:license]
+        return true
+      else
+        return false
+      end
     end
 
     # Defaults generators
@@ -169,7 +173,7 @@ module BmcDaemonLib
       ENV["NEW_RELIC_MONITOR_MODE"] = "true"
 
       # License
-      ENV["NEW_RELIC_LICENSE_KEY"] = section[:licence].to_s
+      ENV["NEW_RELIC_LICENSE_KEY"] = section[:license].to_s
 
       # Build NewRelic app_name if not provided as-is
       if section[:app_name]
