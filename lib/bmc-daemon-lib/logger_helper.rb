@@ -39,12 +39,6 @@ module BmcDaemonLib
 
     def build_messages severity, message, details = nil
       messages = []
-      # messages << "/---------------------------------------"
-      # messages << "severity: #{severity}"
-      # messages << "message: #{message.class}"
-      # messages << "details: #{details.class} #{details.inspect}"
-      # messages << "ARRAY(#{details.count})" if details.is_a? Array
-      # messages << "HASH(#{details.count})" if details.is_a? Hash
 
       prefix = build_prefix
 
@@ -62,17 +56,8 @@ module BmcDaemonLib
       end if details.is_a? Hash
 
       # Return all that stuff
-      # messages << "\\---------------------------------------"
       logger.add severity, messages
     end
-
-    # def debug_lines lines, prefix = ''
-    #   if lines.is_a? Array
-    #     logger.debug lines.map{ |line| sprintf(LOG_MESSAGE_ARRAY, prefix, line) }
-    #   elsif lines.is_a? Hash
-    #     logger.debug lines.map{ |key, value| sprintf(LOG_MESSAGE_HASH, prefix, key, value) }
-    #   end
-    # end
 
   end
 end
