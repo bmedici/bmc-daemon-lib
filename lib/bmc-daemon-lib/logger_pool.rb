@@ -24,7 +24,7 @@ module BmcDaemonLib
       logger
 
     rescue Errno::EACCES
-      puts "LoggerPool [#{pipe}] failed: access error"
+      puts "logging [#{pipe}] failed: access error"
     end
 
   protected
@@ -40,20 +40,20 @@ module BmcDaemonLib
       if File.exists?(logfile)
         # File is there, is it writable ?
         unless File.writable?(logfile)
-          puts "LoggerPool [#{pipe}] disabled: file not writable [#{logfile}]"
+          puts "logging [#{pipe}] disabled: file not writable [#{logfile}]"
           return nil
         end
       else
         # No file here, can we create it ?
         logdir = File.dirname(logfile)
         unless File.writable?(logdir)
-          puts "LoggerPool [#{pipe}] disabled: directory not writable [#{logdir}]"
+          puts "logging [#{pipe}] disabled: directory not writable [#{logdir}]"
           return nil
         end
       end
 
       # OK, return a clean file path
-      puts "LoggerPool [#{pipe}] logging to [#{logfile}]"
+      puts "logging [#{pipe}] to [#{logfile}]"
       return logfile
     end
 
