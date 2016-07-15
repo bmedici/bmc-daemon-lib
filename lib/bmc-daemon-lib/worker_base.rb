@@ -1,6 +1,9 @@
 module BmcDaemonLib
   class WorkerBase
+    include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
     include LoggerHelper
+
+    # Class options
     attr_reader :logger
     attr_reader :pool
     attr_reader :wid
@@ -102,7 +105,6 @@ module BmcDaemonLib
 
     # NewRelic instrumentation
     if Conf.newrelic_enabled?
-      include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
       add_transaction_tracer :worker_init,       category: :task
       add_transaction_tracer :worker_after,      category: :task
       add_transaction_tracer :worker_process,    category: :task
