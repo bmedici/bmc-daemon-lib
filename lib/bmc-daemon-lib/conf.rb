@@ -2,6 +2,8 @@
 require "chamber"
 
 module BmcDaemonLib
+  # Class exceptions
+  class ConfigInitiRequired       < StandardError; end
   class ConfigMissingParameter    < StandardError; end
   class ConfigOtherError          < StandardError; end
   class ConfigParseError          < StandardError; end
@@ -194,11 +196,15 @@ module BmcDaemonLib
   private
 
     def self.ensure_init
-      # Skip is already done
-      return if @initialized
+      unless @initialized
+        fail ConfigInitiRequired, "ensure_init: Conf.init(app_root) should be invoked beforehand"
+      end
 
-      # Go through init if not already done
-      self.init
+      # # Skip is already done
+      # return if @initialized
+
+      # # Go through init if not already done
+      # self.init
     end
 
   end
