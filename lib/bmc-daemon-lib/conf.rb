@@ -55,8 +55,10 @@ module BmcDaemonLib
       # Now we know app_name, initalize app_libs
       @app_libs = File.expand_path("lib/#{@app_name}/", @app_root)
 
+      # By default, Newrelic is disabled
+      ENV["NEWRELIC_AGENT_ENABLED"] = "false"
+
       # Add other config files
-      #add_default_config
       add_config generate(:config_defaults)
       add_config generate(:config_etc)
 
@@ -110,11 +112,7 @@ module BmcDaemonLib
 
     def self.newrelic_enabled?
       ensure_init
-      if self[:newrelic] && self[:newrelic][:license]
-        return true
-      else
-        return false
-      end
+      !! (self[:newrelic] && self[:newrelic][:license])
     end
 
     # Defaults generators
@@ -162,20 +160,15 @@ module BmcDaemonLib
 
     def self.prepare_newrelic section, logfile
       # Disable NewRelic if no config present
-      unless self.newrelic_enabled?
-        ENV["NEWRELIC_AGENT_ENABLED"] = "false"
-        return
-      end
+      return unless self.newrelic_enabled?
 
       # Enable GC profiler
       GC::Profiler.enable
 
-      # Enable module
-      ENV["NEWRELIC_AGENT_ENABLED"] = "true"
-      ENV["NEW_RELIC_MONITOR_MODE"] = "true"
-
-      # License
+      # Set logfile, license, monitor mode
+      ENV["NEW_RELIC_LOG"] = logfile.to_s if logfile
       ENV["NEW_RELIC_LICENSE_KEY"] = section[:license].to_s
+      ENV["NEW_RELIC_MONITOR_MODE"] = "true"
 
       # Build NewRelic app_name if not provided as-is
       if section[:app_name]
@@ -189,8 +182,8 @@ module BmcDaemonLib
         ENV["NEW_RELIC_APP_NAME"] = "#{text}-#{host};#{text}"
       end
 
-      # Logfile
-      ENV["NEW_RELIC_LOG"] = logfile.to_s if logfile
+      # Enable module
+      ENV["NEWRELIC_AGENT_ENABLED"] = "true"
     end
 
   private
