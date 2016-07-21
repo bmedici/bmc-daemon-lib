@@ -27,5 +27,4 @@ Gem::Specification.new do |spec|
 
   # Runtime dependencies
   spec.add_runtime_dependency       "chamber", "~> 2.9"
-  spec.add_runtime_dependency       "newrelic_rpm"
 end

@@ -2,7 +2,6 @@
 require "rubygems"
 require "syslog"
 require "thread"
-require "newrelic_rpm"
 
 
 # Project's libs

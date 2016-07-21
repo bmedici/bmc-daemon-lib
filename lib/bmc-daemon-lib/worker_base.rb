@@ -1,6 +1,5 @@
 module BmcDaemonLib
   class WorkerBase
-    include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
     include LoggerHelper
 
     # Class options
@@ -101,13 +100,6 @@ module BmcDaemonLib
       else
         log_error "missing [#{key}] configuration"
       end
-    end
-
-    # NewRelic instrumentation
-    if Conf.newrelic_enabled?
-      add_transaction_tracer :worker_init,       category: :task
-      add_transaction_tracer :worker_after,      category: :task
-      add_transaction_tracer :worker_process,    category: :task
     end
 
   end
