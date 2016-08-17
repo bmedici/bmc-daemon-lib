@@ -171,16 +171,15 @@ module BmcDaemonLib
       ENV["NEW_RELIC_MONITOR_MODE"] = "true"
 
       # Build NewRelic app_name if not provided as-is
-      if section[:app_name]
-        ENV["NEW_RELIC_APP_NAME"] = section[:app_name].to_s
-      else
+      if !section[:app_name]
         stack = []
         stack << (section[:prefix] || @app_name)
         stack << section[:platform] if section[:platform]
         stack << @app_env
         text = stack.join('-')
-        ENV["NEW_RELIC_APP_NAME"] = "#{text}-#{host};#{text}"
+        section[:app_name] = "#{text}; #{text}-#{host}"
       end
+      ENV["NEW_RELIC_APP_NAME"] = section[:app_name].to_s
 
       # Enable module
       ENV["NEWRELIC_AGENT_ENABLED"] = "true"
