@@ -73,32 +73,6 @@ module BmcDaemonLib
       error "consumer cancelled remotely: #{all.inspect}"
     end
 
-    # Start connexion to RabbitMQ
-    def connect_to busconf
-      fail PushyDaemon::EndpointConnexionContext, "invalid bus host/port" unless busconf
-      info "connecting to bus", {
-        broker: busconf,
-        recover: AMQP_RECOVERY_INTERVAL,
-        heartbeat: AMQP_HEARTBEAT_INTERVAL,
-        prefetch: AMQP_PREFETCH
-        }
-      conn = Bunny.new busconf.to_s,
-        logger: @logger,
-        # heartbeat: :server,
-        automatically_recover: true,
-        network_recovery_interval: AMQP_RECOVERY_INTERVAL,
-        heartbeat_interval: AMQP_HEARTBEAT_INTERVAL,
-        read_write_timeout: AMQP_HEARTBEAT_INTERVAL*2
-      conn.start
-
-    rescue Bunny::TCPConnectionFailedForAllHosts, Bunny::AuthenticationFailureError, AMQ::Protocol::EmptyResponseError  => e
-      fail PushyDaemon::EndpointConnectionError, "error connecting (#{e.class})"
-    rescue StandardError => e
-      fail PushyDaemon::EndpointConnectionError, "unknow (#{e.inspect})"
-    else
-      return conn
-    end
-
     def identifier len
       rand(36**len).to_s(36)
     end
