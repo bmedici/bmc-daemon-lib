@@ -16,10 +16,8 @@ module BmcDaemonLib
       @config = {}
 
       # Set thread context
-      @pool = pool
-      @wid = wid
-      Thread.current.thread_variable_set :pool, pool
-      Thread.current.thread_variable_set :wid, wid
+      Thread.current.thread_variable_set :pool, (@pool = pool)
+      Thread.current.thread_variable_set :wid, (@wid = wid)
       Thread.current.thread_variable_set :started_at, Time.now
       worker_status WORKER_STATUS_STARTING
 
@@ -78,11 +76,11 @@ module BmcDaemonLib
       return unless @log_worker_status_changes
 
       # Log this status change
-      if job.is_a?(Job)
-        log_info "status [#{status}] on job[#{job.id}] status[#{job.status}] error[#{job.error}]"
-      else
-        log_info "status [#{status}]"
-      end
+      # if defined?'Job' && job.is_a?(Job)
+      #   log_info "status [#{status}] on job[#{job.id}] status[#{job.status}] error[#{job.error}]"
+      # else
+      log_info "status [#{status}]"
+      # end
     end
 
     def worker_jid jid
