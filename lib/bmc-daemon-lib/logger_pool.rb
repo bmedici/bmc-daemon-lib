@@ -6,7 +6,9 @@ module BmcDaemonLib
   class LoggerPool
     include Singleton
 
-    def get pipe
+    def get pipe = nil
+      pipe =  :default if pipe.to_s.blank?
+
       @loggers ||= {}
       @loggers[pipe] ||= create(pipe)
     end
@@ -31,7 +33,7 @@ module BmcDaemonLib
 
     def logfile pipe
       # Disabled if no valid config
-      return nil unless Conf[:logs].is_a?(Hash)
+      return nil unless Conf[:logs].is_a?(Hash) && Conf.at(:logs, pipe)
 
       # Compute logfile and check if we can write there
       logfile = File.expand_path(Conf[:logs][pipe].to_s, Conf[:logs][:path].to_s)
