@@ -25,16 +25,25 @@ module BmcDaemonLib
 
     # Builds prefix if LOG_PREFIX_FORMAT defined and caller has log_prefix method to provide values
     def build_prefix
-      # Skip if no values from user class
-      return unless respond_to?(:log_prefix, true)
-      values = log_prefix
-
       # Skip if no format defined
       return unless defined?('LOG_PREFIX_FORMAT')
       return unless LOG_PREFIX_FORMAT.is_a? String
 
-      # Build prefix string
-      LOG_PREFIX_FORMAT % values.map(&:to_s)
+      # Skip if no values from user class
+      return unless respond_to?(:log_prefix, true)
+      values = log_prefix
+
+      # Change to an array if not already
+      values = [values] if values.is_a? String
+
+      # Stop if still not an array
+      return unless values.is_a? Array
+
+      # Finally format the string
+      return LOG_PREFIX_FORMAT % values.map(&:to_s)
+
+    rescue ArgumentError
+      return "INVALID_FORMAT"
     end
 
     def build_messages severity, message, details = nil
