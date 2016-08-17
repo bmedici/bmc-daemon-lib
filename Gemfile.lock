@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bmc-daemon-lib (0.2.0)
+    bmc-daemon-lib (0.3.0)
       bunny
       chamber (~> 2.9)
 
