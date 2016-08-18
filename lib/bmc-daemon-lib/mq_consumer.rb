@@ -1,5 +1,3 @@
-require "bunny"
-
 module BmcDaemonLib
   # class ShouterResponseError       < StandardError; end
   # class ShouterChannelClosed       < StandardError; end
