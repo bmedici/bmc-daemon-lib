@@ -1,7 +1,7 @@
 # coding: utf-8
 Gem::Specification.new do |spec|
   # Project version
-  spec.version                      = "0.3.2"
+  spec.version                      = "0.3.3"
 
   # Project description
   spec.name                         = "bmc-daemon-lib"
@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.files                        = `git ls-files -z`.split("\x0")
   spec.executables                  = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths                = ["lib"]
-  spec.required_ruby_version        = ">= 2.2"
+  spec.required_ruby_version        = ">= 2.2.2"
 
   # Development dependencies
   spec.add_development_dependency   "bundler", "~> 1.6"
