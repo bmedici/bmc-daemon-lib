@@ -33,10 +33,11 @@ module BmcDaemonLib
 
     def logfile pipe
       # Disabled if no valid config
-      return nil unless Conf[:logs].is_a?(Hash) && Conf.at(:logs, pipe)
+      #return nil unless Conf[:logs].is_a?(Hash) && Conf.at(:logs, pipe)
 
-      # Compute logfile and check if we can write there
-      logfile = File.expand_path(Conf[:logs][pipe].to_s, Conf[:logs][:path].to_s)
+      # Build logfile from Conf
+      logfile = Conf.logfile_path pipe
+      return nil if logfile.nil?
 
       # Check that we'll be able to create logfiles
       if File.exists?(logfile)

@@ -81,10 +81,7 @@ module BmcDaemonLib
       Encoding.default_external = "utf-8"
 
       # Init New Relic
-      logs_newrelic = Conf.at :logs, :newrelic
-      logs_path = Conf.at :logs, :path
-      newrelic_logfile = File.expand_path logs_newrelic.to_s, logs_path.to_s
-      prepare_newrelic self[:newrelic], newrelic_logfile
+      prepare_newrelic self[:newrelic]
 
       # Try to access any key to force parsing of the files
       self[:dummy]
@@ -110,6 +107,23 @@ module BmcDaemonLib
     def self.at *path
       ensure_init
       path.reduce(Conf) { |m, key| m && m[key.to_s] }
+    end
+
+    def self.logfile_path pipe
+      # Access configuration
+      path      = Conf.at :logs, :path
+      specific  = Conf.at :logs, pipe
+      default   = Conf.at :logs, :default
+
+      # Ignore if explicitely disabled
+      return nil if specific.nil?
+
+      # Fallback on default path if not provided,
+      specific  ||= default
+      specific  ||= "default.log"
+
+      # Build logfile_path
+      File.expand_path specific.to_s, path.to_s
     end
 
     def self.newrelic_enabled?
@@ -145,7 +159,6 @@ module BmcDaemonLib
         config_etc = self.generate(:config_etc)
 
         "A default configuration is available (#{config_defaults}) and can be copied to the default location (#{config_etc}): \n sudo cp #{config_defaults} #{config_etc}"
-
       end
     end
 
@@ -160,7 +173,7 @@ module BmcDaemonLib
       @files << File.expand_path(path) if path && File.readable?(path)
     end
 
-    def self.prepare_newrelic section, logfile
+    def self.prepare_newrelic section
       # Disable NewRelic if no config present
       return unless self.newrelic_enabled?
 
@@ -168,8 +181,8 @@ module BmcDaemonLib
       GC::Profiler.enable
 
       # Set logfile, license, monitor mode
-      ENV["NEW_RELIC_LOG"] = logfile.to_s if logfile
-      ENV["NEW_RELIC_LICENSE_KEY"] = section[:license].to_s
+      ENV["NEW_RELIC_LOG"]          = logfile_path(:newrelic)
+      ENV["NEW_RELIC_LICENSE_KEY"]  = section[:license].to_s
       ENV["NEW_RELIC_MONITOR_MODE"] = "true"
 
       # Build NewRelic app_name if not provided as-is
@@ -181,7 +194,7 @@ module BmcDaemonLib
         text = stack.join('-')
         section[:app_name] = "#{text}; #{text}-#{host}"
       end
-      ENV["NEW_RELIC_APP_NAME"] = section[:app_name].to_s
+      ENV["NEW_RELIC_APP_NAME"]     = section[:app_name].to_s
 
       # Enable module
       ENV["NEWRELIC_AGENT_ENABLED"] = "true"
@@ -193,12 +206,6 @@ module BmcDaemonLib
       unless @initialized
         fail ConfigInitiRequired, "ensure_init: Conf.init(app_root) should be invoked beforehand"
       end
-
-      # # Skip is already done
-      # return if @initialized
-
-      # # Go through init if not already done
-      # self.init
     end
 
   end
