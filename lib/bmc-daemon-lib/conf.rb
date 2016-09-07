@@ -1,6 +1,4 @@
 # FIXME: files named with hyphens will not be found by Chamber for now
-require "chamber"
-
 module BmcDaemonLib
   # Class exceptions
   class ConfigInitiRequired       < StandardError; end
