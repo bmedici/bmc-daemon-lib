@@ -7,7 +7,7 @@ module BmcDaemonLib
     include Singleton
 
     def get pipe = nil
-      pipe =  :default if pipe.to_s.blank?
+      pipe = :default if pipe.to_s.empty?
 
       @loggers ||= {}
       @loggers[pipe] ||= create(pipe)
