@@ -79,8 +79,8 @@ module BmcDaemonLib
       Encoding.default_external = "utf-8"
 
       # Init New Relic, Rollbar
-      prepare_newrelic if self.feature?(:newrelic)
-      prepare_rollbar  if self.feature?(:rollbar)
+      # prepare_newrelic
+      #prepare_rollbar  if self.feature?(:rollbar)
 
       # Try to access any key to force parsing of the files
       self[:dummy]

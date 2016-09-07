@@ -3,8 +3,6 @@ require "rubygems"
 require "syslog"
 require "thread"
 require "chamber"
-require 'newrelic_rpm'
-require 'rollbar'
 
 # Project's libs
 require_relative "bmc-daemon-lib/conf"
