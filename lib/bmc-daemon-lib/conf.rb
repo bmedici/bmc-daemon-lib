@@ -211,6 +211,33 @@ module BmcDaemonLib
       ENV["NEWRELIC_AGENT_ENABLED"] = "true"
     end
 
+    def self.prepare_rollbar
+      # # Disable if no config present
+      # return unless self.feature?(:rollbar)
+      section = self[:rollbar]
+
+      # Configure
+      Rollbar.configure do |config|
+        config.enabled = true
+        config.access_token = section[:token].to_s
+        config.code_version = @app_version
+
+        #config.logger
+        config.environment = @app_env
+
+        # Report asynchronously
+        config.use_async = true
+        # Here we'll disable in 'test':
+        # if Rails.env.test? || Rails.env.development?
+        #   config.enabled = false
+        # end
+        #logfile_path(:newrelic)
+      end
+
+      # Notify startup
+      Rollbar.info("#{@app_name} #{@app_ver} [#{@host}]")
+    end
+
   private
 
     def self.ensure_init
