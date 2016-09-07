@@ -6,6 +6,8 @@ module BmcDaemonLib
   class LoggerPool
     include Singleton
 
+    LOG_ROTATION            = "daily"
+
     def get pipe = nil
       pipe = :default if pipe.to_s.empty?
 
