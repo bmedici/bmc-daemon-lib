@@ -80,8 +80,9 @@ module BmcDaemonLib
       Encoding.default_internal = "utf-8"
       Encoding.default_external = "utf-8"
 
-      # Init New Relic
-      prepare_newrelic self[:newrelic]
+      # Init New Relic, Rollbar
+      prepare_newrelic if self.feature?(:newrelic)
+      prepare_rollbar  if self.feature?(:rollbar)
 
       # Try to access any key to force parsing of the files
       self[:dummy]
@@ -91,6 +92,7 @@ module BmcDaemonLib
     rescue StandardError => e
       fail ConfigOtherError, "#{e.message} \n #{e.backtrace.to_yaml}"
     end
+
 
     # Reload files
     def self.reload!
@@ -182,9 +184,9 @@ module BmcDaemonLib
       @files << File.expand_path(path) if path && File.readable?(path)
     end
 
-    def self.prepare_newrelic section
-      # Disable NewRelic if no config present
-      return unless self.newrelic_enabled?
+    def self.prepare_newrelic
+      # Require lib
+      section = self[:newrelic]
 
       # Enable GC profiler
       GC::Profiler.enable
