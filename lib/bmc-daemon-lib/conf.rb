@@ -132,12 +132,13 @@ module BmcDaemonLib
       # Guess if the specific feature si available
       case name
       when :newrelic
-        self.at(:newrelic, :license)
+        return false if Gem.datadir('newrelic_rpm').nil?
+        return self.at(:newrelic, :license)
       when :rollbar
-        self.at(:rollbar, :token)
-      else
-        false
+        return false if Gem.datadir('rollbar').nil?
+        return self.at(:rollbar, :token)
       end
+      return false
     end
 
     # Defaults generators
@@ -171,19 +172,9 @@ module BmcDaemonLib
       end
     end
 
-
-  protected
-
-    def self.load_files
-      load files: @files, namespaces: { environment: @app_env }
-    end
-
-    def self.add_config path
-      @files << File.expand_path(path) if path && File.readable?(path)
-    end
-
     def self.prepare_newrelic
-      # Require lib
+      # Disable if no config present
+      return unless self.feature?(:newrelic)
       section = self[:newrelic]
 
       # Enable GC profiler
@@ -210,8 +201,8 @@ module BmcDaemonLib
     end
 
     def self.prepare_rollbar
-      # # Disable if no config present
-      # return unless self.feature?(:rollbar)
+      # Disable if no config present
+      return unless self.feature?(:rollbar)
       section = self[:rollbar]
 
       # Configure
@@ -219,21 +210,24 @@ module BmcDaemonLib
         config.enabled = true
         config.access_token = section[:token].to_s
         config.code_version = @app_version
-
-        #config.logger
-        config.environment = @app_env
-
-        # Report asynchronously
+        config.environment  = @app_env
+        #config.logger       = Logger.new(logfile_path(:rollbar))
+        config.logger       = LoggerPool.instance.get :rollbar
         config.use_async = true
-        # Here we'll disable in 'test':
-        # if Rails.env.test? || Rails.env.development?
-        #   config.enabled = false
-        # end
-        #logfile_path(:newrelic)
       end
 
       # Notify startup
       Rollbar.info("#{@app_name} #{@app_ver} [#{@host}]")
+    end
+
+  protected
+
+    def self.load_files
+      load files: @files, namespaces: { environment: @app_env }
+    end
+
+    def self.add_config path
+      @files << File.expand_path(path) if path && File.readable?(path)
     end
 
   private
