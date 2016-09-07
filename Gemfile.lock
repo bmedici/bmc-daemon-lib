@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bmc-daemon-lib (0.3.4)
+    bmc-daemon-lib (0.3.6)
       chamber (~> 2.9)
       newrelic_rpm
       rollbar
