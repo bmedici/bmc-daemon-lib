@@ -126,9 +126,18 @@ module BmcDaemonLib
       File.expand_path specific.to_s, path.to_s
     end
 
-    def self.newrelic_enabled?
+    def self.feature? name
       ensure_init
-      !! (self[:newrelic] && self[:newrelic][:license])
+
+      # Guess if the specific feature si available
+      case name
+      when :newrelic
+        self.at(:newrelic, :license)
+      when :rollbar
+        self.at(:rollbar, :token)
+      else
+        false
+      end
     end
 
     # Defaults generators
