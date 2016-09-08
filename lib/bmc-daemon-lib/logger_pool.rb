@@ -28,7 +28,7 @@ module BmcDaemonLib
       logger
 
     rescue Errno::EACCES
-      puts "logging [#{pipe}] failed: access error"
+      log "create [#{pipe}]: access error"
     end
 
   protected
@@ -45,21 +45,25 @@ module BmcDaemonLib
       if File.exists?(logfile)
         # File is there, is it writable ?
         unless File.writable?(logfile)
-          puts "logging [#{pipe}] disabled: file not writable [#{logfile}]"
+          log "logging [#{pipe}] to [#{logfile}] disabled: file not writable [#{logfile}]"
           return nil
         end
       else
         # No file here, can we create it ?
         logdir = File.dirname(logfile)
         unless File.writable?(logdir)
-          puts "logging [#{pipe}] disabled: directory not writable [#{logdir}]"
+          log "logging [#{pipe}] [#{logfile}] disabled: directory not writable [#{logdir}]"
           return nil
         end
       end
 
       # OK, return a clean file path
-      puts "logging [#{pipe}] to [#{logfile}]"
+      log "logging [#{pipe}] to [#{logfile}]"
       return logfile
+    end
+
+    def log message
+      Conf.log :logger, message
     end
 
   end
