@@ -91,7 +91,6 @@ module BmcDaemonLib
       fail ConfigOtherError, "#{e.message} \n #{e.backtrace.to_yaml}"
     end
 
-
     # Reload files
     def self.reload!
       ensure_init
@@ -206,7 +205,13 @@ module BmcDaemonLib
 
     def self.prepare_rollbar
       # Disable if no config present
-      return unless self.feature?(:rollbar)
+      unless self.feature?(:rollbar)
+        Rollbar.configure do |config|
+          config.enabled = false
+        end
+        return
+      end
+
       section = self[:rollbar]
 
       # Configure
