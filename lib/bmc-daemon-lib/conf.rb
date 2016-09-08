@@ -220,6 +220,15 @@ module BmcDaemonLib
       Rollbar.info("#{@app_name} #{@app_ver} [#{@host}]")
     end
 
+    def self.log origin, message
+      printf(
+        "%s %-10s %s \n",
+        Time.now.strftime("%Y-%m-%d %H:%M:%S"),
+        origin,
+        message
+        )
+    end
+
   protected
 
     def self.load_files
