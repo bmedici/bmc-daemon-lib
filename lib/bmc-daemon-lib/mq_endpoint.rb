@@ -21,15 +21,20 @@ module BmcDaemonLib
 
     def log_message msg_way, msg_topic, msg_key, msg_body = [], msg_attrs = {}
       # Message header
-      header = sprintf("%4s %-20s %s", msg_way, msg_topic, msg_key)
-      log_debug header, msg_attrs if msg_attrs
+      log_info sprintf("%4s %-20s %s", msg_way, msg_topic, msg_key)
+
+      # Message attributes
+      log_debug nil, msg_attrs if msg_attrs
 
       # Body lines
       if msg_body.is_a?(Enumerable) && !msg_body.empty?
         body_json = JSON.pretty_generate(msg_body)
         log_debug nil, body_json.lines
       end
+    end
 
+    def identifier len
+      rand(36**len).to_s(36)
     end
 
     def format_bytes number, unit="", decimals = 0
