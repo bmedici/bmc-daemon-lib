@@ -9,6 +9,7 @@ module BmcDaemonLib
     LOG_ROTATION            = "daily"
 
     def get pipe = nil
+      # If not provided, use :default
       pipe = :default if pipe.to_s.empty?
 
       @loggers ||= {}

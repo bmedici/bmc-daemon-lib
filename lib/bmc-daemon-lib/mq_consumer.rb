@@ -76,7 +76,7 @@ module BmcDaemonLib
       return if sent_at.empty?
 
       # Extract sent_at header
-      sent_at = Time.iso8601(msg_headers['sent_at'])
+      sent_at = Time.parse(msg_headers['sent_at'])
 
       rescue StandardError => ex
         log_error "extract_delay: can't parse sent_at [#{sent_at}] (#{ex.message})"
