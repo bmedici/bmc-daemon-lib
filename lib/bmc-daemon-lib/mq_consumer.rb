@@ -1,3 +1,5 @@
+require 'time'
+
 module BmcDaemonLib
   class MqConsumerError              < StandardError; end
   class MqConsumerException          < StandardError; end

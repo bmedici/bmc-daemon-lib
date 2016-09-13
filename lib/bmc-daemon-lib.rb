@@ -3,6 +3,7 @@ require "rubygems"
 require "syslog"
 require "thread"
 require "chamber"
+require "time"
 
 # Project's libs
 require_relative "bmc-daemon-lib/conf"
