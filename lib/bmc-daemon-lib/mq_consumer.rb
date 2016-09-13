@@ -1,6 +1,8 @@
 module BmcDaemonLib
+  class MqConsumerError              < StandardError; end
 
   class MqConsumer < MqEndpoint
+
     include LoggerHelper
     attr_reader :logger
 
@@ -12,64 +14,52 @@ module BmcDaemonLib
 
       # Create consumer on this queue
       @queue.subscribe(manual_ack: AMQP_MANUAL_ACK, on_cancellation: :consumer_cancelled) do |delivery_info, metadata, payload|
-        # Prepare data
-        msg_exchange = delivery_info.exchange
-        msg_rkey = delivery_info.routing_key.force_encoding('UTF-8')
-        msg_tag = delivery_info.delivery_tag
-
-        msg_headers = metadata.headers || {}
-
-        # Extract payload
-        msg_data = payload_parse payload, metadata.content_type
-
-        # Announce
-        announce    msg_rkey, msg_tag, msg_data, metadata,      msg_exchange, payload.bytesize
-
-        # Hand to the callback
-        receive     msg_rkey, msg_tag, msg_data, metadata,      delivery_info
+        handle_receive context, delivery_info, metadata, payload
       end
     end
 
-    def announce msg_rkey, msg_tag, msg_data, metadata, msg_exchange, payload_bytesize
-  protected
-
-      # Prepare data
-      msg_headers = metadata.headers || {}
-
-      # Announce match
-      log_message MSG_RECV, msg_exchange, msg_rkey, msg_data, {
-        'channel.dtag' => "#{@channel.id}.#{msg_tag}",
-        'app-id' => metadata.app_id,
-        'content-type' => metadata.content_type,
-        'delay (ms)' => extract_delay(msg_headers),
-        'body size' => format_bytes(payload_bytesize, "B"),
-        }
-    end
-
-    def bind_on topic, route
+    def listen_to topic, rkey
       # Exchange to this rule
       exchange = @channel.topic(topic, durable: true, persistent: false)
 
-      info "bind_on [#{topic}] [#{route}] > [#{@queue.name}]"
-      @queue.bind exchange, routing_key: route
+      log_info "listen_to [#{topic}] [#{rkey}] > [#{@queue.name}]"
+      @queue.bind exchange, routing_key: rkey
+    end
+
+  protected
+
+    def handle_receive context, delivery_info, metadata, payload
+      # raise MqConsumerError, "testing!"
+
+      # Prepare data
+      msg_topic = delivery_info.exchange
+      msg_rkey = delivery_info.routing_key.force_encoding('UTF-8')
+      msg_tag = delivery_info.delivery_tag
+      msg_headers = metadata.headers || {}
+
+      # Extract payload
+      msg_data = payload_parse payload, metadata.content_type
+
+      # Announce match
+      payload_bytesize = payload.bytesize
+      log_message MSG_RECV, msg_topic, msg_rkey, msg_data, {
+        app_id:       metadata.app_id,
+        channel_tag:  "#{@channel.id}.#{msg_tag}",
+        content_type: metadata.content_type,
+        delay_ms:     extract_delay(msg_headers),
+        body_size:    format_bytes(payload_bytesize, "B"),
+        }
+
+      # Hand to the callback
+      handle_message context, metadata, delivery_info,
+        topic: msg_topic,
+        rkey: msg_rkey,
+        tag: msg_tag,
+        data: msg_data
     end
 
     def consumer_cancelled all={}
-      error "consumer cancelled remotely: #{all.inspect}"
-    end
-
-    def log_message msg_way, msg_exchange, msg_key, msg_body = [], msg_attrs = {}
-      # Message header
-      info sprintf("%3s %-15s %s", msg_way, msg_exchange, msg_key)
-
-      # Body lines
-      if msg_body.is_a?(Enumerable) && !msg_body.empty?
-        body_json = JSON.pretty_generate(msg_body)
-        log_debug nil, body_json.lines
-      end
-
-      # Attributes lines
-      log_debug nil, msg_attrs if msg_attrs
+      log_error "consumer_cancelled remotely: #{all.inspect}"
     end
 
     def extract_delay msg_headers
@@ -84,8 +74,8 @@ module BmcDaemonLib
       return ((Time.now - sent_at)*1000).round(2)
     end
 
-    def receive delivery_info, metadata, payload
-      debug "MqConsumer.receive"
+    def handle_message context, metadata, delivery_info, message = {}
+      log_error "MqConsumer.handle_message [#{context.to_s}] #{message.inspect}"
     end
 
     def payload_parse payload, content_type #, fields = []
