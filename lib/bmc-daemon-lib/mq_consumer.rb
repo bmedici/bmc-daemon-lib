@@ -4,10 +4,8 @@ module BmcDaemonLib
     include LoggerHelper
     attr_reader :logger
 
-  protected
-
-    def subscribe_on_queue name
-      info "use_queue [#{name}]"
+    def subscribe_to_queue name, context = nil
+      log_info "subscribe_to_queue [#{name}]"
 
       # Queue for this rule
       @queue = @channel.queue(name, auto_delete: false, durable: true)
@@ -33,6 +31,8 @@ module BmcDaemonLib
     end
 
     def announce msg_rkey, msg_tag, msg_data, metadata, msg_exchange, payload_bytesize
+  protected
+
       # Prepare data
       msg_headers = metadata.headers || {}
 
