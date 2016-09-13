@@ -53,21 +53,25 @@ module BmcDaemonLib
       return unless defined?('LOG_PREFIX_FORMAT')
       return unless LOG_PREFIX_FORMAT.is_a? String
 
-      # Skip if no values from user class
-      return unless respond_to?(:log_prefix, true)
-      values = log_prefix
+      # At start, values is an empty array
+      values = nil
 
-      # Change to an array if not already
+      # Call the instance's method
+      if respond_to?(:log_prefix, true)
+        values = log_prefix
+      end
+
+      # Change to an array if a simple string
       values = [values] if values.is_a? String
 
-      # Stop if still not an array
-      return unless values.is_a? Array
+      # Ensure we always have an array (method not found, or log_prefix returning something else)
+      values = [] unless values.is_a? Array
 
       # Finally format the string
       return LOG_PREFIX_FORMAT % values.map(&:to_s)
 
-    rescue ArgumentError
-      return "INVALID_FORMAT"
+    rescue ArgumentError => ex
+      return "(LOG_PREFIX_FORMAT has an invalid format)"
     end
 
   end
