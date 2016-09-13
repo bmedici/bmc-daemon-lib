@@ -6,10 +6,6 @@ module BmcDaemonLib
 
   protected
 
-    def log_prefix
-      self.class.name.split('::').last
-    end
-
     def subscribe_on_queue name
       info "use_queue [#{name}]"
 
@@ -62,10 +58,6 @@ module BmcDaemonLib
       error "consumer cancelled remotely: #{all.inspect}"
     end
 
-    def identifier len
-      rand(36**len).to_s(36)
-    end
-
     def log_message msg_way, msg_exchange, msg_key, msg_body = [], msg_attrs = {}
       # Message header
       info sprintf("%3s %-15s %s", msg_way, msg_exchange, msg_key)
@@ -90,17 +82,6 @@ module BmcDaemonLib
 
       # Compute delay
       return ((Time.now - sent_at)*1000).round(2)
-    end
-
-    def format_bytes number, unit="", decimals = 0
-      return "&Oslash;" if number.nil? || number.to_f.zero?
-
-      units = ["", "k", "M", "G", "T", "P" ]
-      index = ( Math.log(number) / Math.log(2) ).to_i / 10
-      converted = number.to_f / (1024 ** index)
-
-      truncated = converted.round(decimals)
-      return "#{truncated} #{units[index]}#{unit}"
     end
 
     def receive delivery_info, metadata, payload

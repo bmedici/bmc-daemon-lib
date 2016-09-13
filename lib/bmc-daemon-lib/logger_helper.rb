@@ -6,20 +6,44 @@ module BmcDaemonLib
   protected
 
     def log_info message, details = nil
-      build_messages Logger::INFO, message, details
+      log Logger::INFO, message, details
     end
 
     def log_error message, details = nil
-      build_messages Logger::ERROR, message, details
+      log Logger::ERROR, message, details
     end
 
     def log_debug message, details = nil
-      build_messages Logger::DEBUG, message, details
+      log Logger::DEBUG, message, details
     end
 
     alias info log_info
     alias error log_error
     alias debug log_debug
+
+    def log severity, message, details = nil
+      fail "LoggerHelper.log: invalid logger" unless logger.respond_to? :add
+
+      messages = []
+
+      prefix = build_prefix
+
+      # Add main message
+      messages << sprintf(LOG_MESSAGE_TEXT, prefix, message) if message
+
+      # Add details from array
+      details.each do |line|
+        messages << sprintf(LOG_MESSAGE_ARRAY, prefix, line)
+      end if details.is_a? Array
+
+      # Add details from hash
+      details.each do |key, value|
+        messages << sprintf(LOG_MESSAGE_HASH, prefix, key, value)
+      end if details.is_a? Hash
+
+      # Return all that stuff
+      logger.add severity, messages
+    end
 
   private
 
@@ -44,28 +68,6 @@ module BmcDaemonLib
 
     rescue ArgumentError
       return "INVALID_FORMAT"
-    end
-
-    def build_messages severity, message, details = nil
-      messages = []
-
-      prefix = build_prefix
-
-      # Add main message
-      messages << sprintf(LOG_MESSAGE_TEXT, prefix, message) if message
-
-      # Add details from array
-      details.each do |line|
-        messages << sprintf(LOG_MESSAGE_ARRAY, prefix, line)
-      end if details.is_a? Array
-
-      # Add details from hash
-      details.each do |key, value|
-        messages << sprintf(LOG_MESSAGE_HASH, prefix, key, value)
-      end if details.is_a? Hash
-
-      # Return all that stuff
-      logger.add severity, messages
     end
 
   end
