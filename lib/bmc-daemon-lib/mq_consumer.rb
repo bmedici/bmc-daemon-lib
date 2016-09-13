@@ -1,5 +1,6 @@
 module BmcDaemonLib
   class MqConsumerError              < StandardError; end
+  class MqConsumerException          < StandardError; end
 
   class MqConsumer < MqEndpoint
 
@@ -56,6 +57,12 @@ module BmcDaemonLib
         rkey: msg_rkey,
         tag: msg_tag,
         data: msg_data
+
+    # Handle errors
+    rescue StandardError => e
+      #puts "handle_receive: exception: #{e.inspect}"
+      log_error "UNEXPECTED EXCEPTION: #{e.inspect}"
+      raise MqConsumerException, e.message
     end
 
     def consumer_cancelled all={}
@@ -63,15 +70,19 @@ module BmcDaemonLib
     end
 
     def extract_delay msg_headers
-      return unless msg_headers['sent_at']
+      sent_at = msg_headers['sent_at'].to_s
+      return if sent_at.empty?
 
       # Extract sent_at header
-      sent_at = Time.iso8601(msg_headers['sent_at']) rescue nil
-      # log_info "sent_at     : #{sent_at.to_f}"
-      # log_info "timenow     : #{Time.now.to_f}"
+      sent_at = Time.iso8601(msg_headers['sent_at'])
 
-      # Compute delay
-      return ((Time.now - sent_at)*1000).round(2)
+      rescue StandardError => ex
+        log_error "extract_delay: can't parse sent_at [#{sent_at}] (#{ex.message})"
+        return nil
+
+      else
+        # Compute delay
+        return ((Time.now - sent_at)*1000).round(2)
     end
 
     def handle_message context, metadata, delivery_info, message = {}
