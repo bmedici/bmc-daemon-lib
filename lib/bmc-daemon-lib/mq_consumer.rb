@@ -47,6 +47,7 @@ module BmcDaemonLib
       payload_bytesize = payload.bytesize
       log_message MSG_RECV, msg_topic, msg_rkey, msg_data, {
         app_id:       metadata.app_id,
+        sent_at:      msg_headers['sent_at'],
         channel_tag:  "#{@channel.id}.#{msg_tag}",
         content_type: metadata.content_type,
         delay_ms:     extract_delay(msg_headers),
