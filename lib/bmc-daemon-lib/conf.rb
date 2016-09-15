@@ -178,7 +178,10 @@ module BmcDaemonLib
     def self.prepare_newrelic
       # Disable if no config present
       return unless self.feature?(:newrelic)
+
+      # Ok, let's start
       section = self[:newrelic]
+      log :conf, "prepare NewRelic"
 
       # Enable GC profiler
       GC::Profiler.enable
@@ -212,7 +215,9 @@ module BmcDaemonLib
         return
       end
 
+      # Ok, let's start
       section = self[:rollbar]
+      log :conf, "prepare Rollbar"
 
       # Configure
       Rollbar.configure do |config|
@@ -231,7 +236,7 @@ module BmcDaemonLib
 
     def self.log origin, message
       printf(
-        "%s %-10s %s \n",
+        "%s %-14s %s \n",
         Time.now.strftime("%Y-%m-%d %H:%M:%S"),
         origin,
         message
