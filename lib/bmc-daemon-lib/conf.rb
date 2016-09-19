@@ -78,10 +78,6 @@ module BmcDaemonLib
       Encoding.default_internal = "utf-8"
       Encoding.default_external = "utf-8"
 
-      # Init New Relic, Rollbar
-      # prepare_newrelic
-      #prepare_rollbar  if self.feature?(:rollbar)
-
       # Try to access any key to force parsing of the files
       self[:dummy]
 
@@ -234,8 +230,7 @@ module BmcDaemonLib
         config.access_token = section[:token].to_s
         config.code_version = @app_version
         config.environment  = @app_env
-        #config.logger       = Logger.new(logfile_path(:rollbar))
-        config.logger       = LoggerPool.instance.get :rollbar
+        config.logger       = LoggerPool.instance.get(:rollbar)
         config.use_async = true
       end
 
