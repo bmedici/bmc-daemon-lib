@@ -108,21 +108,30 @@ module BmcDaemonLib
       path.reduce(Conf) { |m, key| m && m[key.to_s] }
     end
 
-    def self.logfile_path pipe
-      # Access configuration
-      path      = Conf.at :logs, :path
-      specific  = Conf.at :logs, pipe
-      default   = Conf.at :logs, :default
+    def self.logfile pipe
+      # Build logfile from Conf
+      logfile = self.logfile_path(pipe)
+      return nil if logfile.nil?
 
-      # Ignore if explicitely disabled
-      return nil if specific.nil?
+      # Check that we'll be able to create logfiles
+      if File.exists?(logfile)
+        # File is there, is it writable ?
+        unless File.writable?(logfile)
+          log :conf, "logging [#{pipe}] disabled: file not writable [#{logfile}]"
+          return nil
+        end
+      else
+        # No file here, can we create it ?
+        logdir = File.dirname(logfile)
+        unless File.writable?(logdir)
+          log :conf, "logging [#{pipe}] disabled: directory not writable [#{logdir}]"
+          return nil
+        end
+      end
 
-      # Fallback on default path if not provided,
-      specific  ||= default
-      specific  ||= "default.log"
-
-      # Build logfile_path
-      File.expand_path specific.to_s, path.to_s
+      # OK, return a clean file path
+      log :conf, "logging [#{pipe}] to [#{logfile}]"
+      return logfile
     end
 
     def self.feature? name
@@ -177,7 +186,11 @@ module BmcDaemonLib
 
     def self.prepare_newrelic
       # Disable if no config present
-      return unless self.feature?(:newrelic)
+      unless self.feature?(:newrelic)
+        ENV["NEWRELIC_AGENT_ENABLED"] = "false"
+        log :conf, "prepare NewRelic: disabled"
+        return
+      end
 
       # Ok, let's start
       section = self[:newrelic]
@@ -251,6 +264,24 @@ module BmcDaemonLib
 
     def self.add_config path
       @files << File.expand_path(path) if path && File.readable?(path)
+    end
+
+    def self.logfile_path pipe
+      # Access configuration
+      path      = self.at :logs, :path
+      specific  = self.at :logs, pipe
+      default   = self.at :logs, :default
+
+      # Ignore if explicitely disabled
+      return nil if specific.nil?
+      return nil if specific == false
+
+      # Fallback on default path if not provided,
+      specific ||= default
+      specific ||= "default.log"
+
+      # Build logfile_path
+      File.expand_path specific.to_s, path.to_s
     end
 
   private
