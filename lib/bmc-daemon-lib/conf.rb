@@ -186,11 +186,7 @@ module BmcDaemonLib
 
     def self.prepare_newrelic
       # Disable if no config present
-      unless self.feature?(:newrelic)
-        ENV["NEWRELIC_AGENT_ENABLED"] = "false"
-        log :conf, "prepare NewRelic: disabled"
-        return
-      end
+      return unless self.feature?(:newrelic)
 
       # Ok, let's start
       section = self[:newrelic]
@@ -198,11 +194,6 @@ module BmcDaemonLib
 
       # Enable GC profiler
       GC::Profiler.enable
-
-      # Set logfile, license, monitor mode
-      ENV["NEW_RELIC_LOG"]          = logfile_path(:newrelic)
-      ENV["NEW_RELIC_LICENSE_KEY"]  = section[:license].to_s
-      ENV["NEW_RELIC_MONITOR_MODE"] = "true"
 
       # Build NewRelic app_name if not provided as-is
       if !section[:app_name]
@@ -213,10 +204,15 @@ module BmcDaemonLib
         text = stack.join('-')
         section[:app_name] = "#{text}; #{text}-#{host}"
       end
-      ENV["NEW_RELIC_APP_NAME"]     = section[:app_name].to_s
 
-      # Enable module
-      ENV["NEWRELIC_AGENT_ENABLED"] = "true"
+      # Start the agent
+      NewRelic::Agent.manual_start({
+        agent_enabled: true,
+        log: LoggerPool.instance.get(:newrelic),
+        env: @app_env,
+        license_key: section[:license].to_s,
+        app_name: section[:app_name].to_s,
+      })
     end
 
     def self.prepare_rollbar
