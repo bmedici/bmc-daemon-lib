@@ -20,19 +20,25 @@ module BmcDaemonLib
     end
 
     def log_info message, details = nil
-      logger.add Logger::INFO, message, get_full_context, details
+      log Logger::INFO, message, details
     end
     def log_error message, details = nil
-      logger.add Logger::ERROR, message, get_full_context, details
+      log Logger::ERROR, message, details
     end
     def log_debug message, details = nil
-      logger.add Logger::DEBUG, message, get_full_context, details
+      log Logger::DEBUG, message, details
     end
 
   private
 
     def get_full_context
       context = nil
+    def log severity, message, details
+      return puts "LoggerHelper.log: missing logger (#{get_class_name})" unless logger
+      # puts "LoggerHelper.log > #{message}"
+      # puts "LoggerHelper.log     > #{get_full_context.inspect}"
+      logger.add severity, message, get_full_context, details
+    end
 
       # Grab the classe's context
       context = log_context() if self.respond_to?(:log_context)
@@ -41,7 +47,7 @@ module BmcDaemonLib
       context = {} unless context.is_a? Hash
 
       # Who is the caller? Guess it from caller's class name if not provided
-      context[:caller] ||= self.class.name.to_s.split('::').last
+      context[:caller] ||= get_class_name
 
       # Return the whole context
       return context
@@ -50,6 +56,9 @@ module BmcDaemonLib
     # alias info log_info
     # alias error log_error
     # alias debug log_debug
+    def get_class_name
+      self.class.name.to_s.split('::').last
+    end
 
   end
 end
