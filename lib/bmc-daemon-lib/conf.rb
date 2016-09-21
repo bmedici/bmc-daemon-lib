@@ -236,7 +236,7 @@ module BmcDaemonLib
       end
 
       # Notify startup
-      Rollbar.info("#{@app_name} #{@app_ver} [#{@host}]")
+      Rollbar.info("[#{@app_ver}] #{@host}")
     end
 
     def self.log origin, message
