@@ -2,17 +2,15 @@ require "logger"
 
 module BmcDaemonLib
   module LoggerHelper
-    # Use accessor to expose logger to Grape, who uses .logger
+    # Use accessor to expose logger to Grape, as it uses logger.*
     attr_accessor :logger
 
   protected
 
     def log_pipe pipe, caller = nil
       @log_pipe = pipe
-      @logger = BmcDaemonLib::LoggerPool.instance.get pipe
+      @logger = BmcDaemonLib::LoggerPool.instance.get(pipe)
       @caller = caller
-      #Conf.log "log #{@log_pipe}", "log_to pipe: #{pipe} logger class: #{@logger.class}"
-      #return @logger
     end
 
     def log_context
@@ -52,9 +50,6 @@ module BmcDaemonLib
       return context
     end
 
-    # alias info log_info
-    # alias error log_error
-    # alias debug log_debug
     def get_class_name
       self.class.name.to_s.split('::').last
     end
