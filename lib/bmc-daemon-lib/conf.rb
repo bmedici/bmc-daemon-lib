@@ -194,14 +194,22 @@ module BmcDaemonLib
       # Build NewRelic app_name if not provided as-is
       self.newrelic_init_app_name(conf)
 
+      # Set env variables
+      ENV["NEW_RELIC_AGENT_ENABLED"] = "true"
+      ENV["NEW_RELIC_LOG"] = logfile_path(:newrelic)
+      ENV["NEW_RELIC_LICENSE_KEY"] = conf[:license].to_s
+      ENV["NEW_RELIC_APP_NAME"] = conf[:app_name].to_s
+
+      # logger_newrelic = Logger.new('/tmp/newrelic.log')
+      # logger_newrelic.debug Time.now()
       # Start the agent
-      NewRelic::Agent.manual_start({
-        agent_enabled: true,
-        log: LoggerPool.instance.get(:newrelic),
-        env: @app_env,
-        license_key: section[:license].to_s,
-        app_name: section[:app_name].to_s,
-      })
+      # NewRelic::Agent.manual_start({
+      #   agent_enabled: true,
+      #   log: logger_newrelic,
+      #   env: @app_env,
+      #   license_key: conf[:license].to_s,
+      #   app_name: conf[:app_name].to_s,
+      # })
     end
 
     def self.prepare_rollbar
