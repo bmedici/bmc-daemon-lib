@@ -192,14 +192,7 @@ module BmcDaemonLib
       GC::Profiler.enable
 
       # Build NewRelic app_name if not provided as-is
-      if !section[:app_name]
-        stack = []
-        stack << (section[:prefix] || @app_name)
-        stack << section[:platform] if section[:platform]
-        stack << @app_env
-        text = stack.join('-')
-        section[:app_name] = "#{text}; #{text}-#{host}"
-      end
+      self.newrelic_init_app_name(conf)
 
       # Start the agent
       NewRelic::Agent.manual_start({
@@ -248,6 +241,21 @@ module BmcDaemonLib
     end
 
   protected
+
+    def self.newrelic_init_app_name conf
+      # Ignore if already set
+      return if conf[:app_name]
+
+      # Stack all those parts
+      stack = []
+      stack << (conf[:prefix] || @app_name)
+      stack << conf[:platform] if conf[:platform]
+      stack << @app_env
+      text = stack.join('-')
+
+      # Return a composite appname
+      conf[:app_name] = "#{text}; #{text}-#{@host}"
+    end
 
     def self.load_files
       load files: @files, namespaces: { environment: @app_env }
