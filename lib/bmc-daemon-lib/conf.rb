@@ -185,8 +185,8 @@ module BmcDaemonLib
       return unless self.feature?(:newrelic)
 
       # Ok, let's start
-      section = self[:newrelic]
       log :conf, "prepare NewRelic"
+      conf = self[:newrelic]
 
       # Enable GC profiler
       GC::Profiler.enable
@@ -221,13 +221,13 @@ module BmcDaemonLib
       end
 
       # Ok, let's start
-      section = self[:rollbar]
       log :conf, "prepare Rollbar"
+      conf = self[:rollbar]
 
       # Configure
       Rollbar.configure do |config|
         config.enabled = true
-        config.access_token = section[:token].to_s
+        config.access_token = conf[:token].to_s
         config.code_version = @app_version
         config.environment  = @app_env
         config.logger       = LoggerPool.instance.get(:rollbar)
