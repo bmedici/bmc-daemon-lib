@@ -32,11 +32,11 @@ module BmcDaemonLib
     def log severity, message, details
       return puts "LoggerHelper.log: missing logger (#{get_class_name})" unless logger
       # puts "LoggerHelper.log > #{message}"
-      # puts "LoggerHelper.log     > #{get_full_context.inspect}"
-      logger.add severity, message, get_full_context, details
+      # puts "LoggerHelper.log     > #{full_context.inspect}"
+      logger.add severity, message, full_context, details
     end
 
-    def get_full_context
+    def full_context
       # Grab the classe's context
       context = log_context()
 
