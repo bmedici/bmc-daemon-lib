@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bmc-daemon-lib (0.4.2)
+    bmc-daemon-lib (0.4.3)
       chamber (~> 2.9.1)
 
 GEM
