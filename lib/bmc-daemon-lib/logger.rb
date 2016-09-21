@@ -30,6 +30,16 @@ module BmcDaemonLib
       end
     end
 
+    # def info message
+    #   add Logger::INFO, "INFO:#{message}"
+    # end
+    # def debug message
+    #   add Logger::DEBUG, "DEBUG:#{message}"
+    # end
+    # def error message
+    #   add Logger::ERROR, "ERROR:#{message}"
+    # end
+
     def add severity, message, context = nil, details = nil
       # Start from an empty messages list with the main message
       messages = []

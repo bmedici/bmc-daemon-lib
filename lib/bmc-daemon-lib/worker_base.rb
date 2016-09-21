@@ -8,7 +8,6 @@ module BmcDaemonLib
 
     def initialize wid, pool = nil
       # Logger
-      # FIXME log_pipe
       log_pipe :workers
       @log_worker_status_changes = true
 

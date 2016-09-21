@@ -1,9 +1,4 @@
 module BmcDaemonLib
-  # class ShouterResponseError       < StandardError; end
-  # class ShouterChannelClosed       < StandardError; end
-  # class ShouterPreconditionFailed  < StandardError; end
-  # class ShouterInterrupted         < StandardError; end
-  # class EndpointTopicContext       < StandardError; end
   class EndpointConnexionContext    < StandardError; end
   class EndpointConnectionError     < StandardError; end
   class EndpointSubscribeContext    < StandardError; end
