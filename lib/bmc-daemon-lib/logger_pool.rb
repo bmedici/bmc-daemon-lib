@@ -21,7 +21,7 @@ module BmcDaemonLib
       filename = Conf.logfile(pipe)
 
       # Create the logger and return it
-      logger = BmcDaemonLib::Logger.new(filename, LOG_ROTATION)   #, 10, 1024000)
+      logger = Logger.new(filename, LOG_ROTATION)   #, 10, 1024000)
       logger.progname = pipe.to_s.downcase
 
       # Finally return this logger
