@@ -21,11 +21,11 @@ module BmcDaemonLib
       filename = Conf.logfile(pipe)
 
       # Create the logger and return it
-      logger = Logger.new(filename, LOG_ROTATION)   #, 10, 1024000)
+      logger = BmcDaemonLib::Logger.new(filename, LOG_ROTATION)   #, 10, 1024000)
       logger.progname = pipe.to_s.downcase
-      logger.formatter = LoggerFormatter
 
       # Finally return this logger
+      # FIXME logger.datetime_format
       logger
 
     rescue Errno::EACCES
