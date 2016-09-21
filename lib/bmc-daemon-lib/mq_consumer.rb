@@ -5,9 +5,7 @@ module BmcDaemonLib
   class MqConsumerException          < StandardError; end
 
   class MqConsumer < MqEndpoint
-
     include LoggerHelper
-    attr_reader :logger
 
     def subscribe_to_queue name, context = nil
       log_info "subscribe_to_queue [#{name}]"

@@ -2,6 +2,8 @@ require "logger"
 
 module BmcDaemonLib
   module LoggerHelper
+    # Use accessor to expose logger to Grape, who uses .logger
+    attr_accessor :logger
 
   protected
 

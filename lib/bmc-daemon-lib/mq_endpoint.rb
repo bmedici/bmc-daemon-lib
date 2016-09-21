@@ -11,13 +11,8 @@ module BmcDaemonLib
 
   class MqEndpoint
     include LoggerHelper
-    attr_reader :logger
 
   protected
-
-    def log_prefix
-      self.class.name.split('::').last
-    end
 
     def log_message msg_way, msg_topic, msg_key, msg_body = [], msg_attrs = {}
       # Message header

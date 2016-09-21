@@ -3,12 +3,12 @@ module BmcDaemonLib
     include LoggerHelper
 
     # Class options
-    attr_reader :logger
     attr_reader :pool
     attr_reader :wid
 
     def initialize wid, pool = nil
       # Logger
+      # FIXME log_pipe
       @logger = LoggerPool.instance.get :workers
       @log_worker_status_changes = true
 
@@ -16,8 +16,8 @@ module BmcDaemonLib
       @config = {}
 
       # Set thread context
-      Thread.current.thread_variable_set :pool, (@pool = pool)
       Thread.current.thread_variable_set :wid, (@wid = wid)
+      Thread.current.thread_variable_set :pool, (@pool = pool)
       Thread.current.thread_variable_set :started_at, Time.now
       worker_status WORKER_STATUS_STARTING
 
@@ -28,7 +28,7 @@ module BmcDaemonLib
         # We're ok, let's start out loop
         start_loop
       end
-  end
+    end
 
   protected
 
@@ -40,14 +40,6 @@ module BmcDaemonLib
     def worker_process
     end
     def worker_config
-    end
-
-    def log_prefix
-     [
-      Thread.current.thread_variable_get(:wid),
-      Thread.current.thread_variable_get(:jid),
-      nil
-      ]
     end
 
     def start_loop
@@ -81,11 +73,6 @@ module BmcDaemonLib
       # else
       log_info "status [#{status}]"
       # end
-    end
-
-    def worker_jid jid
-      Thread.current.thread_variable_set :jid, jid
-      Thread.current.thread_variable_set :updated_at, Time.now
     end
 
     def config_section key
