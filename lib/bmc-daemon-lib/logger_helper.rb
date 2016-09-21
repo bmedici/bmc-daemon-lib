@@ -30,19 +30,19 @@ module BmcDaemonLib
   private
 
     def get_full_context
-      context = log_context
-      return unless context.is_a? Hash
-      end
+      context = nil
 
-      # Change to an array if a simple string
-      values = [values] if values.is_a? String
+      # Grab the classe's context
+      context = log_context() if self.respond_to?(:log_context)
 
-      # Ensure we always have an array (method not found, or log_prefix returning something else)
-      values = [] unless values.is_a? Array
+      # Initialize an empty context, if log_context returned something else, or it the method was not exposed
+      context = {} unless context.is_a? Hash
 
-      # Finally format the string
-      return LOG_PREFIX_FORMAT % values.map(&:to_s)
+      # Who is the caller? Guess it from caller's class name if not provided
+      context[:caller] ||= self.class.name.to_s.split('::').last
 
+      # Return the whole context
+      return context
     end
 
     # alias info log_info
