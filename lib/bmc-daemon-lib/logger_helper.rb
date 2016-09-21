@@ -31,8 +31,6 @@ module BmcDaemonLib
 
   private
 
-    def get_full_context
-      context = nil
     def log severity, message, details
       return puts "LoggerHelper.log: missing logger (#{get_class_name})" unless logger
       # puts "LoggerHelper.log > #{message}"
@@ -40,8 +38,9 @@ module BmcDaemonLib
       logger.add severity, message, get_full_context, details
     end
 
+    def get_full_context
       # Grab the classe's context
-      context = log_context() if self.respond_to?(:log_context)
+      context = log_context()
 
       # Initialize an empty context, if log_context returned something else, or it the method was not exposed
       context = {} unless context.is_a? Hash
