@@ -14,7 +14,7 @@ module BmcDaemonLib
       trim:   400,
       }
 
-    def initialize filename, rotation
+    def initialize filename, rotation = nil
       # Initialize
       super
       @format = DEFAULT_FORMAT
