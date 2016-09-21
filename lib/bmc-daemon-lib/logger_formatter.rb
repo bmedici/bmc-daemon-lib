@@ -23,9 +23,5 @@ module BmcDaemonLib
 
   protected
 
-    def self.trimmed line
-      line.to_s.rstrip[0..LOG_MESSAGE_TRIM].force_encoding(Encoding::UTF_8)
-    end
-
   end
 end

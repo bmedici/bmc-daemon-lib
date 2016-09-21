@@ -13,6 +13,10 @@ module BmcDaemonLib
 
   protected
 
+    def trimmed line
+      line.to_s.rstrip[0..@format[:trim].to_i].force_encoding(Encoding::UTF_8)
+    end
+
     def formatter severity, datetime, context, messages
     end
 
