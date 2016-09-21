@@ -5,8 +5,6 @@ module BmcDaemonLib
 
   protected
 
-    def log_info message, details = nil
-      log Logger::INFO, message, details
     def log_pipe pipe, caller = nil
       @log_pipe = pipe
       @logger = BmcDaemonLib::LoggerPool.instance.get pipe
@@ -15,20 +13,18 @@ module BmcDaemonLib
       #return @logger
     end
 
-    def log_error message, details = nil
-      log Logger::ERROR, message, details
     def log_context
       {}      # ['DEFAULT', self.class.name.split('::').last]
     end
 
-    def log_debug message, details = nil
-      log Logger::DEBUG, message, details
+    def log_info message, details = nil
+      logger.add Logger::INFO, message, get_full_context, details
     end
-
-    alias info log_info
-    alias error log_error
-    alias debug log_debug
-
+    def log_error message, details = nil
+      logger.add Logger::ERROR, message, get_full_context, details
+    end
+    def log_debug message, details = nil
+      logger.add Logger::DEBUG, message, get_full_context, details
     end
 
   private
@@ -59,6 +55,10 @@ module BmcDaemonLib
     rescue ArgumentError => ex
       return "(LOG_PREFIX_FORMAT has an invalid format)"
     end
+
+    # alias info log_info
+    # alias error log_error
+    # alias debug log_debug
 
   end
 end
