@@ -76,17 +76,17 @@ module BmcDaemonLib
 
   private
 
-    # Builds prefix from @format[:context] and values
-    def build_context values
+    # Builds prefix from @format[:context] and context
+    def build_context context
       # Skip if no format defined
-      return "[context is not a hash]" unless @format[:context].is_a? Hash
+      return unless @format[:context].is_a? Hash
 
-      # Call the instance's method to get hash values
-      return "[log_context is not a hash]" unless values.is_a? Hash
+      # Call the instance's method to get hash context
+      return unless context.is_a? Hash
 
       # Build each context part
       return @format[:context].collect do |key, format|
-        sprintf(format, values[key])
+        sprintf(format, context[key])
       end.join
 
     rescue KeyError, ArgumentError => ex
