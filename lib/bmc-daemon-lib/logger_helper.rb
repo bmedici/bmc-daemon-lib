@@ -7,10 +7,18 @@ module BmcDaemonLib
 
     def log_info message, details = nil
       log Logger::INFO, message, details
+    def log_pipe pipe, caller = nil
+      @log_pipe = pipe
+      @logger = BmcDaemonLib::LoggerPool.instance.get pipe
+      @caller = caller
+      #Conf.log "log #{@log_pipe}", "log_to pipe: #{pipe} logger class: #{@logger.class}"
+      #return @logger
     end
 
     def log_error message, details = nil
       log Logger::ERROR, message, details
+    def log_context
+      {}      # ['DEFAULT', self.class.name.split('::').last]
     end
 
     def log_debug message, details = nil
