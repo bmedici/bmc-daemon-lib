@@ -29,18 +29,9 @@ module BmcDaemonLib
 
   private
 
-    # Builds prefix if LOG_PREFIX_FORMAT defined and caller has log_prefix method to provide values
-    def build_prefix
-      # Skip if no format defined
-      return unless defined?('LOG_PREFIX_FORMAT')
-      return unless LOG_PREFIX_FORMAT.is_a? String
-
-      # At start, values is an empty array
-      values = nil
-
-      # Call the instance's method
-      if respond_to?(:log_prefix, true)
-        values = log_prefix
+    def get_full_context
+      context = log_context
+      return unless context.is_a? Hash
       end
 
       # Change to an array if a simple string
@@ -52,8 +43,6 @@ module BmcDaemonLib
       # Finally format the string
       return LOG_PREFIX_FORMAT % values.map(&:to_s)
 
-    rescue ArgumentError => ex
-      return "(LOG_PREFIX_FORMAT has an invalid format)"
     end
 
     # alias info log_info
