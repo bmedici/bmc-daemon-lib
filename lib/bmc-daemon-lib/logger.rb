@@ -30,6 +30,25 @@ module BmcDaemonLib
       end
     end
 
+    def add severity, message, context = nil, details = nil
+      # Start from an empty messages list with the main message
+      messages = []
+      messages << sprintf(@format[:text], message) if message
+
+      # Add details from array
+      details.each do |line|
+        messages << sprintf(@format[:array], line)
+      end if details.is_a? Array
+
+      # Add details from hash
+      details.each do |key, value|
+        messages << sprintf(@format[:hash], key, value)
+      end if details.is_a? Hash
+
+      # Pass all that stuff to my parent
+      super severity, messages, context
+    end
+
   protected
 
     def trimmed line

@@ -21,28 +21,6 @@ module BmcDaemonLib
     alias error log_error
     alias debug log_debug
 
-    def log severity, message, details = nil
-      fail "LoggerHelper.log: invalid logger" unless logger.respond_to? :add
-
-      messages = []
-
-      prefix = build_prefix
-
-      # Add main message
-      messages << sprintf(LOG_MESSAGE_TEXT, prefix, message) if message
-
-      # Add details from array
-      details.each do |line|
-        messages << sprintf(LOG_MESSAGE_ARRAY, prefix, line)
-      end if details.is_a? Array
-
-      # Add details from hash
-      details.each do |key, value|
-        messages << sprintf(LOG_MESSAGE_HASH, prefix, key, value)
-      end if details.is_a? Hash
-
-      # Return all that stuff
-      logger.add severity, messages
     end
 
   private
