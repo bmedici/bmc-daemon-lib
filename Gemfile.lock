@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     bmc-daemon-lib (0.4.0)
-      chamber (~> 2.9)
+      chamber (~> 2.9.1)
 
 GEM
   remote: https://rubygems.org/
@@ -33,7 +33,7 @@ PLATFORMS
 
 DEPENDENCIES
   bmc-daemon-lib!
-  bundler (~> 1.6)
+  bundler
   rake
   rspec
 
