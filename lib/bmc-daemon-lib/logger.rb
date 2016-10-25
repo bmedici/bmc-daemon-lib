@@ -45,15 +45,29 @@ module BmcDaemonLib
       messages = []
       messages << sprintf(@format[:text], message) if message
 
+      # Add raw lines
+      if context.nil? && (details.is_a? Array)
+        messages = details
+
       # Add details from array
-      details.each do |line|
-        messages << sprintf(@format[:array], line)
-      end if details.is_a? Array
+      elsif details.is_a? Array
+        details.each do |line|
+          messages << sprintf(@format[:array], line)
+        end 
 
       # Add details from hash
-      details.each do |key, value|
-        messages << sprintf(@format[:hash], key, value)
-      end if details.is_a? Hash
+      elsif details.is_a? Hash
+        details.each do |key, value|
+          messages << sprintf(@format[:hash], key, value)
+        end 
+
+      # Add each line of "details" after split
+      elsif details.is_a? String
+        details.lines.each do |line|
+          messages << line unless line.empty?
+        end 
+    
+      end
 
       # Pass all that stuff to my parent
       super severity, messages, context
