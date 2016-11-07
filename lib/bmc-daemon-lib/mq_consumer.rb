@@ -3,6 +3,7 @@ require 'time'
 module BmcDaemonLib
   class MqConsumerError              < StandardError; end
   class MqConsumerException          < StandardError; end
+  class MqConsumerTopicNotFound      < StandardError; end
 
   class MqConsumer < MqEndpoint
     include LoggerHelper
@@ -20,13 +21,20 @@ module BmcDaemonLib
     end
 
     def listen_to topic, rkey
-      # Exchange to this rule
-      exchange = @channel.topic(topic, durable: true, persistent: false)
-
+      # puts "listen_to(#{topic},#{rkey})"
       log_info "listen_to [#{topic}] [#{rkey}] > [#{@queue.name}]"
-      @queue.bind exchange, routing_key: rkey
-    end
+      @queue.bind topic, routing_key: rkey
 
+      # Handle errors
+      rescue Bunny::NotFound => e
+        log_error "exchange not found: #{e.inspect}"
+        raise MqConsumerTopicNotFound, e.message
+
+      rescue StandardError => e
+        log_error "UNEXPECTED EXCEPTION: #{e.inspect}"
+        raise MqConsumerException, e.message
+    end
+    
   protected
 
     def handle_receive context, delivery_info, metadata, payload
