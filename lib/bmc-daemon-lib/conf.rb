@@ -5,8 +5,10 @@ module BmcDaemonLib
   class ConfigMissingParameter    < StandardError; end
   class ConfigOtherError          < StandardError; end
   class ConfigParseError          < StandardError; end
-  class ConfigMultipleGemspec     < StandardError; end
-  class ConfigMissingGemspec      < StandardError; end
+
+  class ConfigGemspecNotUnique    < StandardError; end
+  class ConfigGemspecMissing      < StandardError; end
+  class ConfigGemspecInvalid      < StandardError; end
 
   class Conf
     extend Chamber
@@ -37,14 +39,18 @@ module BmcDaemonLib
 
       # Store and clean app_root
       @app_root = File.expand_path(app_root)
+      gemspec_path = "#{@app_root}/*.gemspec"
 
       # Try to find any gemspec file
-      matches   = Dir["#{@app_root}/*.gemspec"]
-      fail ConfigMissingGemspec, "gemspec file not found: #{gemspec_path}" if matches.size < 1
-      fail ConfigMultipleGemspec, "gemspec file not found: #{gemspec_path}" if matches.size > 1
+      matches   = Dir[gemspec_path]
+      fail ConfigGemspecMissing, "gemspec file not found: #{gemspec_path}" if matches.size < 1
+      fail ConfigGemspecNotUnique, "gemspec file not found: #{gemspec_path}" if matches.size > 1
 
       # Load Gemspec (just the only match)
       @spec     = Gem::Specification::load(matches.first)
+      fail ConfigGemspecInvalid, "gemspec not readable: #{gemspec_path}" unless @spec
+
+      # Extract useful information from gemspec
       @app_name = @spec.name
       @app_ver  = @spec.version
       fail ConfigMissingParameter, "gemspec: missing name" unless @app_name
