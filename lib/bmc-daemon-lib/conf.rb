@@ -286,7 +286,6 @@ module BmcDaemonLib
       default   = self.at :logs, :default
 
       # Ignore if explicitely disabled
-      return nil if specific.nil?
       return nil if specific == false
 
       # Fallback on default path if not provided,
