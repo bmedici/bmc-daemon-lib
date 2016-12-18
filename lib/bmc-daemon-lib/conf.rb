@@ -276,7 +276,16 @@ module BmcDaemonLib
     end
 
     def self.add_config path
-      @files << File.expand_path(path) if path && File.readable?(path)
+      # Skip if path is not readable
+      return unless path && File.readable?(path)
+
+      # Check if Chamber's behaviour may cause problems with hyphens
+      if File.basename(path).include?'-'
+        log :conf, "WARNING: files containting dashes may cause problems with Chamber"
+      end
+
+      # Store the files
+      @files << File.expand_path(path) 
     end
 
     def self.logfile_path pipe
