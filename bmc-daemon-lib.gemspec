@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   # Project description
   spec.name                         = "bmc-daemon-lib"
   spec.authors                      = ["Bruno MEDICI"]
-  spec.email                        = "bmc-daemon-lib@bmconseil.com"
+  spec.email                        = "opensource@bmconseil.com"
   spec.description                  = "Shared utilities to build a daemon: logger, configuration, helpers"
   spec.summary                      = spec.description
   spec.homepage                     = "http://github.com/bmedici/bmc-daemon-lib"
