@@ -51,8 +51,8 @@ module BmcDaemonLib
       fail ConfigGemspecInvalid, "gemspec not readable: #{gemspec_path}" unless @spec
 
       # Extract useful information from gemspec
-      @app_name = @spec.name
-      @app_ver  = @spec.version
+      @app_name = @spec.name.to_s
+      @app_ver  = @spec.version.to_s
       fail ConfigMissingParameter, "gemspec: missing name" unless @app_name
       fail ConfigMissingParameter, "gemspec: missing version" unless @app_ver
 
