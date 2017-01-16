@@ -17,14 +17,17 @@ module BmcDaemonLib
       {}
     end
 
+    def log_debug message, details = nil
+      log Logger::DEBUG, message, details
+    end
     def log_info message, details = nil
       log Logger::INFO, message, details
     end
+    def log_warning message, details = nil
+      log Logger::WARNING, message, details
+    end
     def log_error message, details = nil
       log Logger::ERROR, message, details
-    end
-    def log_debug message, details = nil
-      log Logger::DEBUG, message, details
     end
 
   private
