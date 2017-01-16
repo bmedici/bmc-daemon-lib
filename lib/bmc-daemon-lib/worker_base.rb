@@ -22,7 +22,7 @@ module BmcDaemonLib
 
       # Ask worker to init itself, and return if there are errors
       if worker_init_result = worker_init
-        log_error "worker_init aborting: #{worker_init_result.inspect}", @config
+        log_warning "aborting: #{worker_init_result.inspect}", @config
       else
         # We're ok, let's start out loop
         start_loop
