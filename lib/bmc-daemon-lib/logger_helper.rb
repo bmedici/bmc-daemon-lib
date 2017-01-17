@@ -23,8 +23,8 @@ module BmcDaemonLib
     def log_info message, details = nil
       log Logger::INFO, message, details
     end
-    def log_warning message, details = nil
-      log Logger::WARNING, message, details
+    def log_warn message, details = nil
+      log Logger::WARN, message, details
     end
     def log_error message, details = nil
       log Logger::ERROR, message, details
