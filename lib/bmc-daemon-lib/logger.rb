@@ -9,8 +9,8 @@ module BmcDaemonLib
       time:   "%Y-%m-%d %H:%M:%S",
       context: "[%s]",
       text:   "%s",
-      array:  "     ·%s",
-      hash:   "     ·%-15s %s",
+      array:  "     · %s",
+      hash:   "     · %-15s : %s",
       trim:   400,
       }
 
