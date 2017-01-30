@@ -49,6 +49,23 @@ module BmcDaemonLib
     def worker_config
     end
 
+    def worker_sleep seconds
+      return if seconds.nil? || seconds.to_f == 0.0
+      worker_status STATUS_SLEEPING
+      log_info "worker_sleep: #{seconds}", @config
+      sleep seconds
+    end
+
+    def working_on_job(job, working_on_it = false)
+      if working_on_it
+        job.wid = Thread.current.thread_variable_get :wid
+        Thread.current.thread_variable_set :jid, job.id
+      else
+        job.wid = nil
+        Thread.current.thread_variable_set :jid, nil
+      end
+    end
+
     def start_loop
       log_info "start_loop starting", @config
       loop do
