@@ -2,6 +2,14 @@ module BmcDaemonLib
   class WorkerBase
     include LoggerHelper
 
+    STATUS_STARTING  = "starting"
+    STATUS_READY     = "ready"
+    STATUS_WORKING   = "working"
+    STATUS_SLEEPING  = "sleeping"
+    STATUS_FINISHED  = "finished"
+    STATUS_CRASHED   = "crashed"
+    STATUS_TIMEOUT   = "timeout"
+
     # Class options
     attr_reader :pool
     attr_reader :wid
@@ -18,7 +26,7 @@ module BmcDaemonLib
       Thread.current.thread_variable_set :wid, (@wid = wid)
       Thread.current.thread_variable_set :pool, (@pool = pool)
       Thread.current.thread_variable_set :started_at, Time.now
-      worker_status WORKER_STATUS_STARTING
+      worker_status STATUS_STARTING
 
       # Ask worker to init itself, and return if there are errors
       if worker_init_result = worker_init
