@@ -83,7 +83,7 @@ module BmcDaemonLib
       end
     end
 
-    def worker_status status, job = nil
+    def worker_status status
       # Update thread variables
       Thread.current.thread_variable_set :status, status
       Thread.current.thread_variable_set :updated_at, Time.now
