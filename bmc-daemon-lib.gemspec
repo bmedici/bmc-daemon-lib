@@ -26,8 +26,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency   "rubocop"
   #spec.add_development_dependency   "pry"
 
-
-
   # Runtime dependencies
   spec.add_runtime_dependency       "chamber" , "~> 2.9.1"
 end
