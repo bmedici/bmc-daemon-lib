@@ -70,11 +70,16 @@ module BmcDaemonLib
       log_info "start_loop starting", @config
       loop do
         begin
+          # Announce we're waiting for work
+          worker_status STATUS_READY
+
           # Do the hard work
           worker_process
 
           # Do the cleaning/sleeping stuff
           worker_after
+          # Should we sleep ?
+          worker_sleep @config[:timer]
 
         rescue StandardError => e
           log_error "WORKER EXCEPTION: #{e.inspect}"
