@@ -76,8 +76,6 @@ module BmcDaemonLib
           # Do the hard work
           worker_process
 
-          # Do the cleaning/sleeping stuff
-          worker_after
           # Should we sleep ?
           worker_sleep @config[:timer]
 
