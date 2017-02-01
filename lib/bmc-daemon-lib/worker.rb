@@ -1,7 +1,8 @@
 module BmcDaemonLib
-  class WorkerBase
+  class Worker
     include LoggerHelper
 
+    # Statuses
     STATUS_STARTING  = "starting"
     STATUS_READY     = "ready"
     STATUS_WORKING   = "working"
