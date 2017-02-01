@@ -1,7 +1,7 @@
 # coding: utf-8
 Gem::Specification.new do |spec|
   # Project version
-  spec.version                      = "0.7.4"
+  spec.version                      = "0.8.0"
 
   # Project description
   spec.name                         = "bmc-daemon-lib"
