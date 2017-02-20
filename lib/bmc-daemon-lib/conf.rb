@@ -136,21 +136,28 @@ module BmcDaemonLib
       return logfile
     end
 
-    def self.feature? name
+    # Feature testers
+    def self.feature_newrelic?
       ensure_init
+      return false if Gem.datadir('newrelic_rpm').nil?
+      return false if self.at(:newrelic, :enabled) == false
+      return false if self.at(:newrelic, :disabled) == true
+      return self.at(:newrelic, :license) || false
+    end
+    def self.feature_rollbar?
+      ensure_init
+      return false if Gem.datadir('rollbar').nil?
+      return false if self.at(:rollbar, :enabled) == false
+      return false if self.at(:rollbar, :disabled) == true
+      return self.at(:rollbar, :token) || false
+    end
 
-      # Guess if the specific feature si available
+    def self.feature? name
       case name
       when :newrelic
-        return false if Gem.datadir('newrelic_rpm').nil?
-        return false if self.at(:newrelic, :enabled) == false
-        return false if self.at(:newrelic, :disabled) == true
-        return self.at(:newrelic, :license) || false
+        return feature_newrelic?
       when :rollbar
-        return false if Gem.datadir('rollbar').nil?
-        return false if self.at(:rollbar, :enabled) == false
-        return false if self.at(:rollbar, :disabled) == true
-        return self.at(:rollbar, :token) || false
+        return feature_rollbar?
       end
       return false
     end
