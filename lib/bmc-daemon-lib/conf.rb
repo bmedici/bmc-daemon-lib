@@ -63,8 +63,8 @@ module BmcDaemonLib
       ENV["NEWRELIC_AGENT_ENABLED"] = "false"
 
       # Add other config files
-      add_config generate(:config_defaults)
-      add_config generate(:config_etc)
+      add_config generate_config_defaults
+      add_config generate_config_etc
 
       # Return something
       return @app_name
@@ -155,35 +155,35 @@ module BmcDaemonLib
       return false
     end
 
-    # Defaults generators
-    def self.generate what
+    # Generators
+    def self.generate_user_agent
       ensure_init
-      return case what
-
-      when :user_agent
-        "#{@app_name}/#{@app_ver}" if @app_name && @app_ver
-
-      when :config_defaults
-        "#{@app_root}/defaults.yml" if @app_root
-
-      when :config_etc
-        "/etc/#{@app_name}.yml" if @app_name
-
-      when :process_name
-        parts = [@app_name, @app_env]
-        parts << self[:port] if self[:port]
-        parts.join('-')
-
-      when :pidfile
-        process_name = self.generate(:process_name)
-        File.expand_path "#{process_name}.pid", PIDFILE_DIR
-
-      when :config_message
-        config_defaults = self.generate(:config_defaults)
+      "#{@app_name}/#{@app_ver}" if @app_name && @app_ver
+    end
+    def self.generate_config_defaults
+      ensure_init
+      "#{@app_root}/defaults.yml" if @app_root
+    end
+    def self.generate_config_etc
+      ensure_init
+      "/etc/#{@app_name}.yml" if @app_name
+    end
+    def self.generate_process_name
+      ensure_init
+      parts = [@app_name, @app_env]
+      parts << self[:port] if self[:port]
+      parts.join('-')
+    end
+    def self.generate_pidfile
+      ensure_init
+      process_name = self.generate_process_name
+      File.expand_path "#{process_name}.pid", PIDFILE_DIR
+    end
+    def self.generate_config_message
+      ensure_init
+        config_defaults = self.generate_config_defaults
         config_etc = self.generate(:config_etc)
-
         "A default configuration is available (#{config_defaults}) and can be copied to the default location (#{config_etc}): \n sudo cp #{config_defaults} #{config_etc}"
-      end
     end
 
     def self.prepare_newrelic
