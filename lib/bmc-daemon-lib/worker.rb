@@ -53,7 +53,7 @@ module BmcDaemonLib
     def worker_sleep seconds
       return if seconds.nil? || seconds.to_f == 0.0
       worker_status STATUS_SLEEPING
-      log_info "worker_sleep: #{seconds}", @config
+      log_debug "worker_sleep: #{seconds}"
       sleep seconds
     end
 
