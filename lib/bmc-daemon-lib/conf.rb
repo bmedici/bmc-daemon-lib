@@ -85,7 +85,7 @@ module BmcDaemonLib
       Encoding.default_external = "utf-8"
 
       # Try to access any key to force parsing of the files
-      self[:dummy]
+      self[:test35547647654856865436346453754746588586799078079876543245678654324567865432]
 
     rescue Psych::SyntaxError => e
       fail ConfigParseError, e.message
