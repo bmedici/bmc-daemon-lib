@@ -287,8 +287,9 @@ module BmcDaemonLib
       return unless path && File.readable?(path)
 
       # Check if Chamber's behaviour may cause problems with hyphens
+      basename = File.basename(path)
       if File.basename(path).include?'-'
-        log :conf, "WARNING: files containting dashes may cause problems with Chamber"
+        log :conf, "WARNING: files with dashes may cause unexpected behaviour with Chamber (#{basename})"
       end
 
       # Store the files
