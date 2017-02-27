@@ -11,6 +11,11 @@
 /tmp/
 /.idea
 
+Gemfile.lock
+.ruby-version
+.ruby-gemset
+
+
 # Used by dotenv library to load environment variables.
 # .env
 
