@@ -38,9 +38,6 @@ module BmcDaemonLib
       end
 
       # Bind on topic exchange, if exists
-      exchange = @channel.topic(topic, durable: true)
-
-      # puts "listen_to(#{topic},#{rkey})"
       @queue.bind topic, routing_key: rkey
 
       # Handle errors
