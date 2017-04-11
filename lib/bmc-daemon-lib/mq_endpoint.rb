@@ -6,6 +6,13 @@ module BmcDaemonLib
 
   class MqEndpoint
     include LoggerHelper
+    attr_accessor :logger
+
+    def initialize channel, *args
+      # Init
+      @channel = channel
+      log_info "MqEndpoint on channel [#{@channel.id}]"
+    end
 
   protected
 
