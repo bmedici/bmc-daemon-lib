@@ -1,8 +1,4 @@
 module BmcDaemonLib
-  class EndpointConnexionContext    < StandardError; end
-  class EndpointConnectionError     < StandardError; end
-  class EndpointSubscribeContext    < StandardError; end
-  class EndpointSubscribeError      < StandardError; end
 
   class MqEndpoint
     include LoggerHelper
