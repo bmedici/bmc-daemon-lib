@@ -24,6 +24,12 @@ module BmcDaemonLib
       # puts "listen_to(#{topic},#{rkey})"
       log_info "listen_to [#{topic}] [#{rkey}] > [#{@queue.name}]"
       @queue.bind topic, routing_key: rkey
+      # Ensure a queue has been successfully subscribed first
+      unless @queue
+        error = "listen_to: no active queue (call subscribe_to_queue beforehand)"
+        log_error error
+        raise MqConsumerException, error
+      end
 
       # Handle errors
       rescue Bunny::NotFound => e
