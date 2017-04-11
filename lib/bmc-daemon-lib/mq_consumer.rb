@@ -10,6 +10,12 @@ module BmcDaemonLib
 
     def subscribe_to_queue name, context = nil
       log_info "subscribe_to_queue [#{name}]"
+      # Ensure a channel has been successfully opened first
+      unless @channel
+        error = "subscribe_to_queue: no active channel (call subscribe_to_queue beforehand)"
+        log_error error
+        raise MqConsumerException, error
+      end
 
       # Queue for this rule
       @queue = @channel.queue(name, auto_delete: false, durable: true)
