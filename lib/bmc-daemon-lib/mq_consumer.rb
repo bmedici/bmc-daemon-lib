@@ -37,18 +37,17 @@ module BmcDaemonLib
         raise MqConsumerException, error
       end
 
-      # Link or create exchange
+      # Bind on topic exchange, if exists
       exchange = @channel.topic(topic, durable: true)
 
       # puts "listen_to(#{topic},#{rkey})"
-      @queue.bind exchange, routing_key: rkey
+      @queue.bind topic, routing_key: rkey
 
       # Handle errors
-      # rescue Bunny::NotFound => e
-      #   log_debug "creating missing exchange [#{topic}]"
-      #   @channel.topic topic, durable: false, auto_delete: true
-      #   retry
-      #   # raise MqConsumerTopicNotFound, e.message
+      rescue Bunny::NotFound => e
+        log_debug "missing exchange [#{topic}]"
+        #@channel.topic topic, durable: false, auto_delete: true
+        raise MqConsumerTopicNotFound, e.message
 
       rescue StandardError => e
         log_error "UNEXPECTED: #{e.inspect}"
