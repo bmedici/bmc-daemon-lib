@@ -9,7 +9,8 @@ module BmcDaemonLib
     include LoggerHelper
 
     def subscribe_to_queue name, context = nil
-      log_info "subscribe_to_queue [#{name}]"
+      log_debug "subscribe_to_queue [#{name}]"
+
       # Ensure a channel has been successfully opened first
       unless @channel
         error = "subscribe_to_queue: no active channel (call subscribe_to_queue beforehand)"
@@ -43,13 +44,18 @@ module BmcDaemonLib
       @queue.bind exchange, routing_key: rkey
 
       # Handle errors
-      rescue Bunny::NotFound => e
-        log_error "exchange not found: #{e.inspect}"
-        raise MqConsumerTopicNotFound, e.message
+      # rescue Bunny::NotFound => e
+      #   log_debug "creating missing exchange [#{topic}]"
+      #   @channel.topic topic, durable: false, auto_delete: true
+      #   retry
+      #   # raise MqConsumerTopicNotFound, e.message
 
       rescue StandardError => e
-        log_error "UNEXPECTED EXCEPTION: #{e.inspect}"
+        log_error "UNEXPECTED: #{e.inspect}"
         raise MqConsumerException, e.message
+
+      else
+      #   log_debug "bound queue [#{@queue.name}] on topic [#{topic}]"
     end
     
   protected
