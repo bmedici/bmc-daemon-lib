@@ -21,15 +21,20 @@ module BmcDaemonLib
     end
 
     def listen_to topic, rkey
-      # puts "listen_to(#{topic},#{rkey})"
       log_info "listen_to [#{topic}] [#{rkey}] > [#{@queue.name}]"
-      @queue.bind topic, routing_key: rkey
+
       # Ensure a queue has been successfully subscribed first
       unless @queue
         error = "listen_to: no active queue (call subscribe_to_queue beforehand)"
         log_error error
         raise MqConsumerException, error
       end
+
+      # Link or create exchange
+      exchange = @channel.topic(topic, durable: true)
+
+      # puts "listen_to(#{topic},#{rkey})"
+      @queue.bind exchange, routing_key: rkey
 
       # Handle errors
       rescue Bunny::NotFound => e
