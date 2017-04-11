@@ -45,31 +45,5 @@ module BmcDaemonLib
       return "#{truncated} #{units[index]}#{unit}"
     end
 
-    # Start connexion to RabbitMQ
-    def connect_to busconf
-      fail BmcDaemonLib::EndpointConnexionContext, "connect_to/busconf" unless busconf
-      log_info "connecting to bus", {
-        broker: busconf,
-        recover: AMQP_RECOVERY_INTERVAL,
-        heartbeat: AMQP_HEARTBEAT_INTERVAL,
-        prefetch: AMQP_PREFETCH
-        }
-      conn = Bunny.new busconf.to_s,
-        logger: @logger,
-        # heartbeat: :server,
-        automatically_recover: true,
-        network_recovery_interval: AMQP_RECOVERY_INTERVAL,
-        heartbeat_interval: AMQP_HEARTBEAT_INTERVAL,
-        read_write_timeout: AMQP_HEARTBEAT_INTERVAL*2
-      conn.start
-
-    rescue Bunny::TCPConnectionFailedForAllHosts, Bunny::AuthenticationFailureError, AMQ::Protocol::EmptyResponseError  => e
-      fail BmcDaemonLib::EndpointConnectionError, "error connecting (#{e.class})"
-    rescue StandardError => e
-      fail BmcDaemonLib::EndpointConnectionError, "unknow (#{e.inspect})"
-    else
-      return conn
-    end
-
   end
 end
