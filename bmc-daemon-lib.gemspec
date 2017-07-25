@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email                        = "opensource@bmconseil.com"
   spec.description                  = "Shared utilities to build a daemon: logger, configuration, helpers"
   spec.summary                      = spec.description
-  spec.homepage                     = "http://github.com/bmedici/bmc-daemon-lib"
+  spec.homepage                   = "http://github.com/bmedici/#{spec.name}"
   spec.licenses                     = ["MIT"]
   spec.date                         = Time.now.strftime("%Y-%m-%d")
 
