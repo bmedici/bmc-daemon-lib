@@ -1,5 +1,5 @@
 module BmcDaemonLib
-  class Worker
+  class WorkerBase
     include LoggerHelper
 
     # Statuses
@@ -54,12 +54,12 @@ module BmcDaemonLib
     def worker_sleep seconds
       return if seconds.nil? || seconds.to_f == 0.0
       worker_status STATUS_SLEEPING
-      log_debug "worker_sleep: #{seconds}"
-      sleep seconds
+      # log_debug "worker_sleep: #{seconds}"
+      sleep(seconds)
     end
 
     def start_loop
-      log_info "start_loop starting", @config
+      log_info "worker loop starting", @config
       loop do
         begin
           # Announce we're waiting for work
