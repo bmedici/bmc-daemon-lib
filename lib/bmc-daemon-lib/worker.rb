@@ -10,6 +10,7 @@ module BmcDaemonLib
     STATUS_FINISHED  = "finished"
     STATUS_CRASHED   = "crashed"
     STATUS_TIMEOUT   = "timeout"
+    STATUS_DOWN      = "down"
 
     # Class options
     attr_reader :pool
@@ -57,16 +58,6 @@ module BmcDaemonLib
       sleep seconds
     end
 
-    def working_on_job(job, working_on_it = false)
-      if working_on_it
-        job.wid = Thread.current.thread_variable_get :wid
-        Thread.current.thread_variable_set :jid, job.id
-      else
-        job.wid = nil
-        Thread.current.thread_variable_set :jid, nil
-      end
-    end
-
     def start_loop
       log_info "start_loop starting", @config
       loop do
@@ -81,7 +72,7 @@ module BmcDaemonLib
           worker_sleep @config[:timer]
 
         rescue StandardError => e
-          log_error "WORKER EXCEPTION: #{e.inspect}"
+          log_error "WORKER EXCEPTION: #{e.inspect}", e.backtrace
           sleep 1
         end
       end
