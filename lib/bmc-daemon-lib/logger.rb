@@ -56,7 +56,7 @@ module BmcDaemonLib
         end 
 
       # Add details from hash
-      elsif details.is_a? Hash
+      elsif details.is_a?(Hash) || details.is_a?(Hashie::Mash)
         details.each do |key, value|
           messages << sprintf(@format[:hash], key, value)
         end 
