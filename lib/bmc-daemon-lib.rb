@@ -1,6 +1,5 @@
 # Global libs
 require "rubygems"
-require "syslog"
 require "thread"
 require "chamber"
 require "time"
