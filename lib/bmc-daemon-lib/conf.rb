@@ -139,14 +139,14 @@ module BmcDaemonLib
     # Feature testers
     def self.feature_newrelic?
       ensure_init
-      return false if Gem.datadir('newrelic_rpm').nil?
+      return false if @spec.datadir('newrelic_rpm').nil?
       return false if self.at(:newrelic, :enabled) == false
       return false if self.at(:newrelic, :disabled) == true
       return self.at(:newrelic, :license) || false
     end
     def self.feature_rollbar?
       ensure_init
-      return false if Gem.datadir('rollbar').nil?
+      return false if @spec.datadir('rollbar').nil?
       return false if self.at(:rollbar, :enabled) == false
       return false if self.at(:rollbar, :disabled) == true
       return self.at(:rollbar, :token) || false
