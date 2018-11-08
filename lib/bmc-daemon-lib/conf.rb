@@ -15,7 +15,7 @@ module BmcDaemonLib
     PIDFILE_DIR = "/tmp/"
 
     class << self
-      attr_accessor :app_env
+      # attr_accessor :app_env
       attr_reader   :app_root
       attr_reader   :app_libs
       attr_reader   :app_name
@@ -23,10 +23,13 @@ module BmcDaemonLib
       attr_reader   :app_started
       attr_reader   :app_spec
       attr_reader   :files
-      attr_reader   :host
+      attr_reader   :config_defaults
+      attr_reader   :config_etc
+
+      config_defaults
     end
 
-    def self.init app_root
+    def self.init app_root = nil
       # Permanent flags
       @initialized  = true
       @app_started  = Time.now
@@ -37,37 +40,33 @@ module BmcDaemonLib
       @app_env      ||= "production"
       @host         ||= `hostname`.to_s.chomp.split(".").first
 
-      # Store and clean app_root
+      # By default, Newrelic is disabled
+      ENV["NEWRELIC_AGENT_ENABLED"] = "false"
+
+      # Store and clean app_root, don't do anything more if not provided
+      return unless app_root
       @app_root = File.expand_path(app_root)
-      gemspec_path = "#{@app_root}/*.gemspec"
-
-      # Try to find any gemspec file
-      matches   = Dir[gemspec_path]
-      fail ConfigGemspecMissing, "gemspec file not found: #{gemspec_path}" if matches.size < 1
-      fail ConfigGemspecNotUnique, "gemspec file not found: #{gemspec_path}" if matches.size > 1
-
-      # Load Gemspec (just the only match)
-      @spec     = Gem::Specification::load(matches.first)
-      fail ConfigGemspecInvalid, "gemspec not readable: #{gemspec_path}" unless @spec
-
-      # Extract useful information from gemspec
-      @app_name = @spec.name.to_s
-      @app_ver  = @spec.version.to_s
-      fail ConfigMissingParameter, "gemspec: missing name" unless @app_name
-      fail ConfigMissingParameter, "gemspec: missing version" unless @app_ver
+      init_from_gemspec app_root
 
       # Now we know app_name, initalize app_libs
       @app_libs = File.expand_path("lib/#{@app_name}/", @app_root)
 
-      # By default, Newrelic is disabled
-      ENV["NEWRELIC_AGENT_ENABLED"] = "false"
-
       # Add other config files
-      add_config generate_config_defaults
-      add_config generate_config_etc
+      @config_defaults = "#{@app_root}/defaults.yml"
+      @config_etc = "/etc/#{@app_name}.yml"
 
-      # Return something
-      return @app_name
+
+      add_config @config_defaults
+      add_config @config_etc
+    end
+
+    def app_env = env
+      @app_en = env
+      ENV["RACK_ENV"] = @app_env.to_s
+    end
+
+    def app_env
+      @app_env
     end
 
     def self.prepare args = {}
@@ -75,28 +74,15 @@ module BmcDaemonLib
 
       # Add extra config file and load them all
       add_config args[:config]
-      reload!
-
-      # Set Rack env
-      ENV["RACK_ENV"] = @app_env.to_s
 
       # Set up encodings
       Encoding.default_internal = "utf-8"
       Encoding.default_external = "utf-8"
 
-      # Try to access any key to force parsing of the files
-      self[:test35547647654856865436346453754746588586799078079876543245678654324567865432]
-
     rescue Psych::SyntaxError => e
       fail ConfigParseError, e.message
     rescue StandardError => e
       fail ConfigOtherError, "#{e.message} \n #{e.backtrace.to_yaml}"
-    end
-
-    # Reload files
-    def self.reload!
-      ensure_init
-      load_files
     end
 
     def self.dump
@@ -172,14 +158,6 @@ module BmcDaemonLib
       ensure_init
       "#{@app_name}/#{@app_ver}" if @app_name && @app_ver
     end
-    def self.generate_config_defaults
-      ensure_init
-      "#{@app_root}/defaults.yml" if @app_root
-    end
-    def self.generate_config_etc
-      ensure_init
-      "/etc/#{@app_name}.yml" if @app_name
-    end
     def self.generate_process_name
       ensure_init
       parts = [@app_name, @app_env]
@@ -188,14 +166,11 @@ module BmcDaemonLib
     end
     def self.generate_pidfile
       ensure_init
-      process_name = self.generate_process_name
-      File.expand_path "#{process_name}.pid", PIDFILE_DIR
+      File.expand_path "#{self.generate_process_name}.pid", PIDFILE_DIR
     end
     def self.generate_config_message
-      ensure_init
-        config_defaults = self.generate_config_defaults
-        config_etc = self.generate(:config_etc)
-        "A default configuration is available (#{config_defaults}) and can be copied to the default location (#{config_etc}): \n sudo cp #{config_defaults} #{config_etc}"
+      return unless @config_defaults && @config_etc
+      "A default configuration is available (#{@config_defaults}) and can be copied to the default location (#{@config_etc}): \n sudo cp #{@config_defaults} #{@config_etc}"
     end
 
     def self.prepare_newrelic
@@ -268,6 +243,25 @@ module BmcDaemonLib
 
   protected
 
+    def self.init_from_gemspec
+      gemspec_path = "#{@app_root}/*.gemspec"
+
+      # Try to find any gemspec file
+      matches   = Dir[gemspec_path]
+      fail ConfigGemspecMissing, "gemspec file not found: #{gemspec_path}" if matches.size < 1
+      fail ConfigGemspecNotUnique, "gemspec file not found: #{gemspec_path}" if matches.size > 1
+
+      # Load Gemspec (just the only match)
+      @spec     = Gem::Specification::load(matches.first)
+      fail ConfigGemspecInvalid, "gemspec not readable: #{gemspec_path}" unless @spec
+
+      # Extract useful information from gemspec
+      @app_name = @spec.name.to_s
+      @app_ver  = @spec.version.to_s
+      fail ConfigMissingParameter, "gemspec: missing name" unless @app_name
+      fail ConfigMissingParameter, "gemspec: missing version" unless @app_ver
+    end
+
     def self.newrelic_init_app_name conf
       # Ignore if already set
       return if conf[:app_name]
@@ -283,10 +277,6 @@ module BmcDaemonLib
       conf[:app_name] = "#{text}; #{text}-#{@host}"
     end
 
-    def self.load_files
-      load files: @files, namespaces: { environment: @app_env }
-    end
-
     def self.add_config path
       # Skip if path is not readable
       return unless path && File.readable?(path)
@@ -299,6 +289,12 @@ module BmcDaemonLib
 
       # Store the files
       @files << File.expand_path(path) 
+
+      # Reload config
+      load files: @files, namespaces: { environment: @app_env }
+
+      # Try to access any key to force parsing of the files
+      self[:test35547647654856865436346453754746588586799078079876543245678654324567865432]
     end
 
     def self.logfile_path pipe
