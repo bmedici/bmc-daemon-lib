@@ -20,9 +20,13 @@ module BmcDaemonLib
 
     # Some global init
     @app_started  = Time.now
-    @app_name     = "[app_name]"
+    @app_name     = ""
     @app_env      = "production"
-    @app_host     =  `hostname`.to_s.chomp.split(".").first
+    @app_host     = `hostname`.to_s.chomp.split(".").first
+
+    # By default, Newrelic is disabled
+    ENV["NEWRELIC_AGENT_ENABLED"] = "false"
+
     class << self
       attr_reader   :app_root
       attr_reader   :app_started
@@ -32,9 +36,6 @@ module BmcDaemonLib
       attr_reader   :app_ver
       attr_reader   :app_spec
       attr_reader   :app_config
-
-      # By default, Newrelic is disabled
-      ENV["NEWRELIC_AGENT_ENABLED"] = "false"
 
       # Store and clean app_root, don't do anything more if not provided
       return unless app_root
@@ -169,13 +170,15 @@ module BmcDaemonLib
     end
 
     def self.generate_pidfile
-      File.expand_path "#{self.generate_process_name}.pid", PIDFILE_DIR
+      ::File.expand_path "#{self.generate_process_name}.pid", PIDFILE_DIR
     end
+
     def self.generate_config_message
       return unless self.generate_config_defaults && self.generate_config_etc
       "A default configuration is available (#{self.generate_config_defaults}) and can be copied to the default location (#{self.generate_config_etc}): \n sudo cp #{self.generate_config_defaults} #{self.generate_config_etc}"
     end
 
+    # Plugins
     def self.prepare_newrelic
       # Disable if no config present
       return unless self.feature?(:newrelic)
@@ -232,7 +235,7 @@ module BmcDaemonLib
       end
 
       # Notify startup
-      Rollbar.info("[#{@app_ver}] #{@host}")
+      Rollbar.info("[#{@app_ver}] #{@app_host}")
     end
 
     def self.log origin, message
@@ -250,6 +253,7 @@ module BmcDaemonLib
       # Check conditions
       check_presence_of @app_root
 
+      # puts "Conf.init_from_gemspec"
       gemspec_path = "#{@app_root}/*.gemspec"
 
       # Try to find any gemspec file
@@ -270,7 +274,7 @@ module BmcDaemonLib
 
     def self.newrelic_init_app_name conf
       # Ignore if already set
-      return if conf[:app_name]
+      return if @app_name
 
       # Check conditions
       check_presence_of @app_env
@@ -283,7 +287,9 @@ module BmcDaemonLib
       text = stack.join('-')
 
       # Return a composite appname
-      conf[:app_name] = "#{text}; #{text}-#{@host}"
+      conf[:app_name] = "#{text}; #{text}-#{@app_host}"
+    end
+
     def self.reload
       files=[]
 
@@ -294,10 +300,11 @@ module BmcDaemonLib
       add_config(files, self.generate_config_etc)
 
       # Load app config
-      add_config(files, Conf.app_config) if @app_config
+      add_config(files, @app_config)
 
       # Reload config
-      puts "Conf.reload: loading files: #{files.inspect}"
+      # puts "Conf.reload: loading files: #{files.inspect}"
+      log :conf, "reloading from files: #{files.inspect}"
       load files: files, namespaces: { environment: @app_env }
 
       # Try to access any key to force parsing of the files
@@ -310,12 +317,9 @@ module BmcDaemonLib
     end
 
     def self.add_config files, path
-      puts "Conf.add_config: #{path}"
-      # Skip if path is not readable
       return unless path && File.readable?(path)
 
       # Check if Chamber's behaviour may cause problems with hyphens
-      puts "Conf.add_config: adding"
       basename = File.basename(path)
       if basename.include?'-'
         log :conf, "WARNING: files with dashes may cause unexpected behaviour with Chamber (#{basename})"
