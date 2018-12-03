@@ -14,13 +14,19 @@ module BmcDaemonLib
     extend Chamber
     PIDFILE_DIR = "/tmp/"
 
+    # Set up encodings
+    Encoding.default_internal = "utf-8"
+    Encoding.default_external = "utf-8"
+
+    # Some global init
+    @app_started  = Time.now
     class << self
       # attr_accessor :app_env
       attr_reader   :app_root
       attr_reader   :app_libs
+      attr_reader   :app_started
       attr_reader   :app_name
       attr_reader   :app_ver
-      attr_reader   :app_started
       attr_reader   :app_spec
       attr_reader   :files
       attr_reader   :config_defaults
@@ -29,10 +35,6 @@ module BmcDaemonLib
       config_defaults
     end
 
-    def self.init app_root = nil
-      # Permanent flags
-      @initialized  = true
-      @app_started  = Time.now
 
       # Default values
       @files        ||= []
