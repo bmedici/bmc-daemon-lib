@@ -70,6 +70,13 @@ module BmcDaemonLib
       def dump
         to_hash.to_yaml(indent: 4, useheader: true, useversion: false )
       end
+    
+      def dump_to_logs
+        self.log :conf, "configuration dump"
+        dump.lines.each do |line|
+          self.log :conf, "|  #{line.rstrip}"
+        end
+      end
       
       # Direct access to any depth
       def at *path
