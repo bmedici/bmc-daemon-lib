@@ -37,10 +37,6 @@ module BmcDaemonLib
       attr_reader   :app_spec
       attr_reader   :app_config
 
-      # Store and clean app_root, don't do anything more if not provided
-      return unless app_root
-      @app_root = File.expand_path(app_root)
-      init_from_gemspec app_root
       def app_env= value
         @app_env = value
         ENV["RACK_ENV"] = value.to_s
@@ -198,17 +194,6 @@ module BmcDaemonLib
       ENV["NEW_RELIC_LOG"] = logfile_path(:newrelic)
       ENV["NEW_RELIC_LICENSE_KEY"] = conf[:license].to_s
       ENV["NEW_RELIC_APP_NAME"] = conf[:app_name].to_s
-
-      # logger_newrelic = Logger.new('/tmp/newrelic.log')
-      # logger_newrelic.debug Time.now()
-      # Start the agent
-      # NewRelic::Agent.manual_start({
-      #   agent_enabled: true,
-      #   log: logger_newrelic,
-      #   env: @app_env,
-      #   license_key: conf[:license].to_s,
-      #   app_name: conf[:app_name].to_s,
-      # })
     end
 
     def self.prepare_rollbar
@@ -270,6 +255,8 @@ module BmcDaemonLib
       @app_ver  = @spec.version.to_s
       fail ConfigMissingParameter, "gemspec: missing name" unless @app_name
       fail ConfigMissingParameter, "gemspec: missing version" unless @app_ver
+
+      return @spec
     end
 
     def self.newrelic_init_app_name conf
@@ -314,10 +301,17 @@ module BmcDaemonLib
       fail ConfigParseError, e.message
     rescue StandardError => e
       fail ConfigOtherError, "#{e.message} \n #{e.backtrace.to_yaml}"
+
+    else
+      return to_hash
     end
 
     def self.add_config files, path
-      return unless path && File.readable?(path)
+      # Should be not empty/nil
+      return unless path
+
+      # Should be readable
+      return unless File.readable?(path)
 
       # Check if Chamber's behaviour may cause problems with hyphens
       basename = File.basename(path)
