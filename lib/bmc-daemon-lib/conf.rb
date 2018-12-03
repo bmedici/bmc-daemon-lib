@@ -58,18 +58,26 @@ module BmcDaemonLib
 
 
 
+      # def self.init app_root = nil
 
+      def app_root= path
+        self.init_from path
+      end
 
-    def self.prepare args = {}
-      ensure_init
+      def init_from path
+        # Store it
+        @app_root = ::File.expand_path(path)
+        return unless @app_root
 
+        # Read the gemspec
+        gemspec = init_from_gemspec
 
-      # def app_root
-      #   self.at(:app, :root)
-      # end
+        # Now we know app_name, initalize app_libs
+        @app_libs = ::File.expand_path("lib/#{@app_name}/", @app_root)
 
-      # def self.prepare args = {}
-      # end
+        #return gemspec
+        return @app_root
+      end
 
       def dump
         # ensure_init
