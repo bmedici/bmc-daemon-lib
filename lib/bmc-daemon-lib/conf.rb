@@ -32,16 +32,6 @@ module BmcDaemonLib
       attr_reader   :app_libs
       attr_reader   :app_ver
       attr_reader   :app_spec
-      attr_reader   :files
-      attr_reader   :config_defaults
-      attr_reader   :config_etc
-
-      config_defaults
-    end
-
-
-      # Default values
-      @files        ||= []
       attr_reader   :app_config
 
       # By default, Newrelic is disabled
@@ -62,39 +52,30 @@ module BmcDaemonLib
         @app_config= path
       end
 
-      # Add other config files
-      @config_defaults = "#{@app_root}/defaults.yml"
-      @config_etc = "/etc/#{@app_name}.yml"
       def cmd_config= path
         @app_config= path
       end
 
 
-      add_config @config_defaults
-      add_config @config_etc
-    end
 
 
 
     def self.prepare args = {}
       ensure_init
 
-      # Add extra config file and load them all
-      add_config args[:config]
 
-      # Set up encodings
-      Encoding.default_internal = "utf-8"
-      Encoding.default_external = "utf-8"
+      # def app_root
+      #   self.at(:app, :root)
+      # end
 
-    rescue Psych::SyntaxError => e
-      fail ConfigParseError, e.message
-    rescue StandardError => e
-      fail ConfigOtherError, "#{e.message} \n #{e.backtrace.to_yaml}"
-    end
+      # def self.prepare args = {}
+      # end
 
-    def self.dump
-      ensure_init
-      to_hash.to_yaml(indent: 4, useheader: true, useversion: false )
+      def dump
+        # ensure_init
+        to_hash.to_yaml(indent: 4, useheader: true, useversion: false )
+      end
+    
     end
 
     # Direct access to any depth
@@ -282,26 +263,48 @@ module BmcDaemonLib
 
       # Return a composite appname
       conf[:app_name] = "#{text}; #{text}-#{@host}"
+    def self.reload
+      files=[]
+      puts "Conf.reload app_root: #{@app_root}"
+      puts "Conf.reload app_name: #{@app_name}"
+
+      # Load defaults
+      add_config(files, "#{app_root}/defaults-always.yml")
+      add_config(files, "#{app_root}/defaults.yml") if @app_root
+
+      # Load etc config
+      add_config(files, "/etc/#{@app_name}.yml") if @app_name
+
+      # Load app config
+      add_config(files, Conf.app_config) if @app_config
+
+      # Reload config
+      puts "Conf.reload: loading files: #{files.inspect}"
+      load files: files, namespaces: { environment: @app_env }
+
+      # Try to access any key to force parsing of the files
+      self[:test35547647654856865436346453754746588586799078079876543245678654324567865432]
+
+    rescue Psych::SyntaxError => e
+      fail ConfigParseError, e.message
+    rescue StandardError => e
+      fail ConfigOtherError, "#{e.message} \n #{e.backtrace.to_yaml}"
     end
 
-    def self.add_config path
+    def self.add_config files, path
+      puts "Conf.add_config: #{path}"
       # Skip if path is not readable
       return unless path && File.readable?(path)
 
       # Check if Chamber's behaviour may cause problems with hyphens
+      puts "Conf.add_config: adding"
       basename = File.basename(path)
-      if File.basename(path).include?'-'
+      if basename.include?'-'
         log :conf, "WARNING: files with dashes may cause unexpected behaviour with Chamber (#{basename})"
       end
 
-      # Store the files
-      @files << File.expand_path(path) 
-
-      # Reload config
-      load files: @files, namespaces: { environment: @app_env }
-
-      # Try to access any key to force parsing of the files
-      self[:test35547647654856865436346453754746588586799078079876543245678654324567865432]
+      # Add it
+      files << File.expand_path(path) 
     end
 
     def self.logfile_path pipe
