@@ -80,7 +80,6 @@ module BmcDaemonLib
       end
 
       def dump
-        # ensure_init
         to_hash.to_yaml(indent: 4, useheader: true, useversion: false )
       end
     
@@ -88,7 +87,6 @@ module BmcDaemonLib
 
     # Direct access to any depth
     def self.at *path
-      ensure_init
       path.reduce(Conf) { |m, key| m && m[key.to_s] }
     end
 
@@ -122,17 +120,13 @@ module BmcDaemonLib
     def self.gem_installed? gemname
       Gem::Specification.collect(&:name).include? gemname
     end
-
-
     def self.feature_newrelic?
-      ensure_init
       return false unless gem_installed?('newrelic_rpm')
       return false if self.at(:newrelic, :enabled) == false
       return false if self.at(:newrelic, :disabled) == true
       return self.at(:newrelic, :license) || false
     end
     def self.feature_rollbar?
-      ensure_init
       return false unless gem_installed?('rollbar')
       return false if self.at(:rollbar, :enabled) == false
       return false if self.at(:rollbar, :disabled) == true
@@ -151,17 +145,21 @@ module BmcDaemonLib
 
     # Generators
     def self.generate_user_agent
-      ensure_init
+      # Check conditions
+      check_presence_of @app_name, @app_ver
+
       "#{@app_name}/#{@app_ver}" if @app_name && @app_ver
     end
+
     def self.generate_process_name
-      ensure_init
+      # Check conditions
+      check_presence_of @app_name, @app_env
+
       parts = [@app_name, @app_env]
       parts << self[:port] if self[:port]
       parts.join('-')
     end
     def self.generate_pidfile
-      ensure_init
       File.expand_path "#{self.generate_process_name}.pid", PIDFILE_DIR
     end
     def self.generate_config_message
@@ -240,6 +238,9 @@ module BmcDaemonLib
   protected
 
     def self.init_from_gemspec
+      # Check conditions
+      check_presence_of @app_root
+
       gemspec_path = "#{@app_root}/*.gemspec"
 
       # Try to find any gemspec file
@@ -261,6 +262,9 @@ module BmcDaemonLib
     def self.newrelic_init_app_name conf
       # Ignore if already set
       return if conf[:app_name]
+
+      # Check conditions
+      check_presence_of @app_env
 
       # Stack all those parts
       stack = []
@@ -334,9 +338,17 @@ module BmcDaemonLib
 
   private
 
-    def self.ensure_init
-      unless @initialized
-        fail ConfigInitiRequired, "ensure_init: Conf.init(app_root) should be invoked beforehand"
+    # Check every argument for value presence
+    def self.check_presence_of *args
+      # puts "check_presence_of #{args.inspect}"
+      args.each do |arg|
+        # OK if it's not empty
+        # puts "- [#{arg}]"
+        next unless arg.to_s.empty?
+
+        # Otherise, we just exit
+        log :conf, "FAILED: object Conf has not been initialized correctly yet"
+        exit 200
       end
     end
 
