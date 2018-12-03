@@ -29,7 +29,6 @@ module BmcDaemonLib
       attr_reader   :app_name
       attr_reader   :app_env
       attr_reader   :app_host
-      attr_reader   :app_libs
       attr_reader   :app_ver
       attr_reader   :app_spec
       attr_reader   :app_config
@@ -46,8 +45,6 @@ module BmcDaemonLib
         ENV["RACK_ENV"] = value.to_s
       end
 
-      # Now we know app_name, initalize app_libs
-      @app_libs = File.expand_path("lib/#{@app_name}/", @app_root)
       def app_config= path
         @app_config= path
       end
@@ -71,9 +68,6 @@ module BmcDaemonLib
 
         # Read the gemspec
         gemspec = init_from_gemspec
-
-        # Now we know app_name, initalize app_libs
-        @app_libs = ::File.expand_path("lib/#{@app_name}/", @app_root)
 
         #return gemspec
         return @app_root
@@ -144,27 +138,42 @@ module BmcDaemonLib
     end
 
     # Generators
+    def self.app_libs
+      check_presence_of @app_name, @app_root
+
+      ::File.expand_path("lib/#{@app_name}/", @app_root)
+    end
+
     def self.generate_user_agent
-      # Check conditions
       check_presence_of @app_name, @app_ver
 
-      "#{@app_name}/#{@app_ver}" if @app_name && @app_ver
+      "#{@app_name}/#{@app_ver}"
     end
 
     def self.generate_process_name
-      # Check conditions
       check_presence_of @app_name, @app_env
 
       parts = [@app_name, @app_env]
       parts << self[:port] if self[:port]
       parts.join('-')
     end
+
+    def self.generate_config_defaults
+      check_presence_of @app_root
+      "#{@app_root}/defaults.yml"
+    end
+
+    def self.generate_config_etc
+      check_presence_of @app_name
+      "/etc/#{@app_name}.yml"
+    end
+
     def self.generate_pidfile
       File.expand_path "#{self.generate_process_name}.pid", PIDFILE_DIR
     end
     def self.generate_config_message
-      return unless @config_defaults && @config_etc
-      "A default configuration is available (#{@config_defaults}) and can be copied to the default location (#{@config_etc}): \n sudo cp #{@config_defaults} #{@config_etc}"
+      return unless self.generate_config_defaults && self.generate_config_etc
+      "A default configuration is available (#{self.generate_config_defaults}) and can be copied to the default location (#{self.generate_config_etc}): \n sudo cp #{self.generate_config_defaults} #{self.generate_config_etc}"
     end
 
     def self.prepare_newrelic
@@ -277,15 +286,12 @@ module BmcDaemonLib
       conf[:app_name] = "#{text}; #{text}-#{@host}"
     def self.reload
       files=[]
-      puts "Conf.reload app_root: #{@app_root}"
-      puts "Conf.reload app_name: #{@app_name}"
 
       # Load defaults
-      add_config(files, "#{app_root}/defaults-always.yml")
-      add_config(files, "#{app_root}/defaults.yml") if @app_root
+      add_config(files, self.generate_config_defaults)
 
       # Load etc config
-      add_config(files, "/etc/#{@app_name}.yml") if @app_name
+      add_config(files, self.generate_config_etc)
 
       # Load app config
       add_config(files, Conf.app_config) if @app_config
