@@ -24,8 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency   "rake"
   spec.add_development_dependency   "rspec"
   spec.add_development_dependency   "rubocop"
-  #spec.add_development_dependency   "pry"
-
+  
   # Runtime dependencies
   # spec.add_runtime_dependency       "hashie" , "~> 3.4.6"   # upgrading to 3.5.4 breaks things !
   # spec.add_runtime_dependency       "chamber" , "~> 2.9.1"

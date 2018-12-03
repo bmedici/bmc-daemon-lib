@@ -50,10 +50,7 @@ module BmcDaemonLib
         @app_config= path
       end
 
-
-
       # def self.init app_root = nil
-
       def app_root= path
         self.init_from path
       end
