@@ -20,12 +20,16 @@ module BmcDaemonLib
 
     # Some global init
     @app_started  = Time.now
+    @app_name     = "[app_name]"
+    @app_env      = "production"
+    @app_host     =  `hostname`.to_s.chomp.split(".").first
     class << self
-      # attr_accessor :app_env
       attr_reader   :app_root
-      attr_reader   :app_libs
       attr_reader   :app_started
       attr_reader   :app_name
+      attr_reader   :app_env
+      attr_reader   :app_host
+      attr_reader   :app_libs
       attr_reader   :app_ver
       attr_reader   :app_spec
       attr_reader   :files
@@ -38,9 +42,7 @@ module BmcDaemonLib
 
       # Default values
       @files        ||= []
-      @app_name     ||= "app_name"
-      @app_env      ||= "production"
-      @host         ||= `hostname`.to_s.chomp.split(".").first
+      attr_reader   :app_config
 
       # By default, Newrelic is disabled
       ENV["NEWRELIC_AGENT_ENABLED"] = "false"
@@ -49,27 +51,30 @@ module BmcDaemonLib
       return unless app_root
       @app_root = File.expand_path(app_root)
       init_from_gemspec app_root
+      def app_env= value
+        @app_env = value
+        ENV["RACK_ENV"] = value.to_s
+      end
 
       # Now we know app_name, initalize app_libs
       @app_libs = File.expand_path("lib/#{@app_name}/", @app_root)
+      def app_config= path
+        @app_config= path
+      end
 
       # Add other config files
       @config_defaults = "#{@app_root}/defaults.yml"
       @config_etc = "/etc/#{@app_name}.yml"
+      def cmd_config= path
+        @app_config= path
+      end
 
 
       add_config @config_defaults
       add_config @config_etc
     end
 
-    def app_env = env
-      @app_en = env
-      ENV["RACK_ENV"] = @app_env.to_s
-    end
 
-    def app_env
-      @app_env
-    end
 
     def self.prepare args = {}
       ensure_init
