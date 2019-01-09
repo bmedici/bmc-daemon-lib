@@ -63,6 +63,9 @@ module BmcDaemonLib
         # Read the gemspec
         gemspec = init_from_gemspec
 
+        # Annnounce loaded context
+        log_conf "initialized [#{@app_name}] version [#{@app_ver}]"
+
         #return gemspec
         return @app_root
       end
@@ -72,9 +75,9 @@ module BmcDaemonLib
       end
     
       def dump_to_logs
-        self.log :conf, "configuration dump"
+        log_conf "configuration dump"
         dump.lines.each do |line|
-          self.log :conf, "|  #{line.rstrip}"
+          log_conf "|  #{line.rstrip}"
         end
       end
       
@@ -92,20 +95,20 @@ module BmcDaemonLib
         if ::File.exists?(logfile)
           # File is there, is it writable ?
           unless ::File.writable?(logfile)
-            log :conf, "logging [#{pipe}] disabled: file not writable [#{logfile}]"
+            log_conf "logging [#{pipe}] disabled: file not writable [#{logfile}]"
             return nil
           end
         else
           # No file here, can we create it ?
           logdir = ::File.dirname(logfile)
           unless ::File.writable?(logdir)
-            log :conf, "logging [#{pipe}] disabled: directory not writable [#{logdir}]"
+            log_conf "logging [#{pipe}] disabled: directory not writable [#{logdir}]"
             return nil
           end
         end
 
         # OK, return a clean file path
-        log :conf, "logging [#{pipe}] to [#{logfile}]"
+        log_conf "logging [#{pipe}] to [#{logfile}]"
         return logfile
       end
 
@@ -182,7 +185,7 @@ module BmcDaemonLib
         return unless self.feature?(:newrelic)
 
         # Ok, let's start
-        log :conf, "prepare NewRelic"
+        log_conf "prepare NewRelic"
         conf = self[:newrelic]
 
         # Enable GC profiler
@@ -208,7 +211,7 @@ module BmcDaemonLib
         end
 
         # Ok, let's start
-        log :conf, "prepare Rollbar"
+        log_conf "prepare Rollbar"
         conf = self[:rollbar]
 
         # Configure
@@ -239,7 +242,7 @@ module BmcDaemonLib
 
         # Reload config
         # puts "Conf.reload: loading files: #{files.inspect}"
-        log :conf, "reloading from files: #{files.inspect}"
+        log_conf "loading configuration from: #{files.inspect}"
         load files: files, namespaces: { environment: @app_env }
 
         # Try to access any key to force parsing of the files
@@ -253,12 +256,16 @@ module BmcDaemonLib
         return to_hash
       end
 
+      def log_conf msg
+        self.log :conf, msg
+      end
+
       def log origin, message
         printf(
           "%s %-14s %s \n",
           Time.now.strftime("%Y-%m-%d %H:%M:%S"),
-          origin,
-          message
+          origin.to_s,
+          message.to_s
           )
       end
 
@@ -317,7 +324,7 @@ module BmcDaemonLib
         # Check if Chamber's behaviour may cause problems with hyphens
         basename = ::File.basename(path)
         if basename.include?'-'
-          log :conf, "WARNING: files with dashes may cause unexpected behaviour with Chamber (#{basename})"
+          log_conf "WARNING: files with dashes may cause unexpected behaviour with Chamber (#{basename})"
         end
 
         # Add it
@@ -335,7 +342,7 @@ module BmcDaemonLib
 
         # Fallback on default path if not provided,
         specific ||= default
-        specific ||= "default.log"
+        specific ||= "log/default.log"
 
         # Build logfile_path
         ::File.expand_path specific.to_s, path.to_s
@@ -352,7 +359,7 @@ module BmcDaemonLib
           next unless arg.to_s.empty?
 
           # Otherise, we just exit
-          log :conf, "FAILED: object Conf has not been initialized correctly yet"
+          log_conf "FAILED: object Conf has not been initialized correctly yet"
           exit 200
         end
       end
